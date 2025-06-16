@@ -1,0 +1,6 @@
+@SWP391_ITMMS_Api_HostAddress = http://localhost:5037
+
+GET {{SWP391_ITMMS_Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
