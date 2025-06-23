@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SWP391_ITMMS_Api.Data;
+using SWP391_ITMMS_Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,8 +8,25 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Đăng ký services
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Cấu hình CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -16,34 +34,22 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// Sử dụng CORS
+app.UseCors("AllowAll");
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-// Ví dụ endpoint mẫu
-app.MapGet("/weatherforecast", () =>
-{
-    var summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+// API endpoint mẫu để test
+app.MapGet("/", () => "Welcome to ITMMS API - Hệ thống quản lý và theo dõi điều trị hiếm muộn!");
 
-app.MapGet("/", () => "Welcome to my API!");
+app.MapGet("/api/health", () => new 
+{ 
+    status = "healthy", 
+    timestamp = DateTime.Now,
+    version = "1.0.0",
+    database = "connected"
+});
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
