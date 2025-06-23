@@ -156,9 +156,14 @@ namespace SWP391_ITMMS_Api.Controllers
 
         // POST: /api/user/feedback
         [HttpPost("feedback")]
-        public async Task<IActionResult> CreateUserFeedback([FromBody] UserFeedback feedback)
+        public async Task<IActionResult> CreateUserFeedback([FromBody] CreateFeedbackDto dto)
         {
-            feedback.CreatedAt = DateTime.UtcNow;
+            var feedback = new UserFeedback
+            {
+                UserId = dto.UserId,
+                Content = dto.Content,
+                CreatedAt = DateTime.UtcNow
+            };
             _context.UserFeedbacks.Add(feedback);
             await _context.SaveChangesAsync();
             return Ok(new { message = "Feedback created" });

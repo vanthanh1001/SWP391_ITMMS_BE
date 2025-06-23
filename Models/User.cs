@@ -59,4 +59,15 @@ namespace SWP391_ITMMS_Api.Models
         public string Address { get; set; }
         public DateTime DateOfBirth { get; set; }
     }
+
+    public class CreateFeedbackDto
+    {
+        public int UserId { get; set; }
+        public string Content { get; set; }
+    }
+
+    public class TreatmentHistoryCreateDto
+    {
+        public string Description { get; set; }
+    }
 } 
