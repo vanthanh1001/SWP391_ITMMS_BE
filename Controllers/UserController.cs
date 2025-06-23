@@ -119,17 +119,29 @@ namespace SWP391_ITMMS_Api.Controllers
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null) return NotFound();
-            return Ok(new { user.Id, user.Username, user.Email, user.Role });
+            return Ok(new {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.Address,
+                user.Phone,
+                dateOfBirth = user.DateOfBirth.ToString("yyyy-MM-dd")
+            });
         }
 
         // PUT: /api/user/profile
         [HttpPut("profile")]
-        public async Task<IActionResult> UpdateUserProfile([FromQuery] int id, [FromBody] User update)
+        public async Task<IActionResult> UpdateUserProfile([FromQuery] int id, [FromBody] UserUpdateDto update)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null) return NotFound();
-            user.Email = update.Email;
-            // Có thể cập nhật thêm các trường khác nếu muốn
+            if (!string.IsNullOrWhiteSpace(update.Email)) user.Email = update.Email;
+            if (!string.IsNullOrWhiteSpace(update.Address)) user.Address = update.Address;
+            if (!string.IsNullOrWhiteSpace(update.Phone)) user.Phone = update.Phone;
+            if (update.DateOfBirth != default(DateTime)) user.DateOfBirth = update.DateOfBirth;
+            if (!string.IsNullOrWhiteSpace(update.Username)) user.Username = update.Username;
+            if (!string.IsNullOrWhiteSpace(update.Password)) user.Password = update.Password;
+            if (!string.IsNullOrWhiteSpace(update.FullName)) user.FullName = update.FullName;
             await _context.SaveChangesAsync();
             return Ok(new { message = "Profile updated" });
         }

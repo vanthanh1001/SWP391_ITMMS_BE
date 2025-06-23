@@ -11,6 +11,7 @@ namespace SWP391_ITMMS_Api.Models
         public string FullName { get; set; }
         public string Phone { get; set; }
         public string Address { get; set; }
+        public DateTime DateOfBirth { get; set; }
         [JsonIgnore]
         public string Role { get; set; } = "user";
     }
@@ -46,5 +47,16 @@ namespace SWP391_ITMMS_Api.Models
     {
         public string Email { get; set; }
         public string Password { get; set; }
+    }
+
+    public class UserUpdateDto
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Email { get; set; }
+        public string FullName { get; set; }
+        public string Phone { get; set; }
+        public string Address { get; set; }
+        public DateTime DateOfBirth { get; set; }
     }
 } 
