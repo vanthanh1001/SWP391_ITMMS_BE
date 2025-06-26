@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\SWP391_ITMMS_Api.props" />
-</Project>

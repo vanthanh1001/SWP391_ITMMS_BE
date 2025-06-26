@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\SWP391_ITMMS_Api.props" />
-</Project>
