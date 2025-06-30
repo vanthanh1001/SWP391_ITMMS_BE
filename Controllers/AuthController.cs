@@ -12,11 +12,13 @@ namespace SWP391_ITMMS_Api.Controllers
     {
         private readonly IUserService _userService;
         private readonly AppDbContext _context;
+        private readonly IJwtService _jwtService;
 
-        public AuthController(IUserService userService, AppDbContext context)
+        public AuthController(IUserService userService, AppDbContext context, IJwtService jwtService)
         {
             _userService = userService;
             _context = context;
+            _jwtService = jwtService;
         }
 
         [HttpPost("register")]
@@ -72,9 +74,13 @@ namespace SWP391_ITMMS_Api.Controllers
                     return Unauthorized(new { message = "Email hoặc mật khẩu không đúng" });
                 }
 
+                // Tạo JWT token
+                var token = _jwtService.GenerateToken(user);
+
                 return Ok(new 
                 { 
                     message = "Đăng nhập thành công", 
+                    token = token,
                     user = new 
                     {
                         user.Id,
