@@ -1,12 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-<<<<<<< HEAD
-using SWP391_ITMMS_Api.Data;
-using System.Linq;
-=======
 using Microsoft.EntityFrameworkCore;
 using SWP391_ITMMS_Api.Data;
 using SWP391_ITMMS_Api.Models;
->>>>>>> upstream/Thanh`
 
 namespace SWP391_ITMMS_Api.Controllers
 {
@@ -15,49 +10,12 @@ namespace SWP391_ITMMS_Api.Controllers
     public class DashboardController : ControllerBase
     {
         private readonly AppDbContext _context;
-<<<<<<< HEAD
-=======
 
->>>>>>> upstream/Thanh`
         public DashboardController(AppDbContext context)
         {
             _context = context;
         }
 
-<<<<<<< HEAD
-        // Endpoint tổng quan dashboard
-        [HttpGet("overview")]
-        public IActionResult GetOverview()
-        {
-            var totalUsers = _context.Users.Count();
-            var totalTreatments = _context.TreatmentHistories.Count();
-            var totalFeedbacks = _context.UserFeedbacks.Count();
-            return Ok(new {
-                TotalUsers = totalUsers,
-                TotalTreatments = totalTreatments,
-                TotalFeedbacks = totalFeedbacks
-            });
-        }
-
-        // Endpoint báo cáo theo ngày/tháng/năm
-        [HttpGet("report")]
-        public IActionResult GetReport(string type = "month")
-        {
-            // Lấy toàn bộ TreatmentHistories ra trước
-            var histories = _context.TreatmentHistories.ToList();
-
-            var data = histories
-                .GroupBy(t => type == "year" ? t.Date.Year.ToString() : t.Date.ToString("yyyy-MM"))
-                .Select(g => new { Period = g.Key, Count = g.Count() })
-                .OrderBy(x => x.Period)
-                .ToList();
-
-            return Ok(new
-            {
-                Type = type,
-                Data = data
-            });
-=======
         /// <summary>
         /// Lấy thống kê tổng quan (Manager/Admin only)
         /// </summary>
@@ -384,7 +342,6 @@ namespace SWP391_ITMMS_Api.Controllers
                     message = $"Lỗi hệ thống: {ex.Message}" 
                 });
             }
->>>>>>> upstream/Thanh`
         }
     }
 } 

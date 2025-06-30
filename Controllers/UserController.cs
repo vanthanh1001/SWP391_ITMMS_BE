@@ -51,7 +51,8 @@ namespace SWP391_ITMMS_Api.Controllers
                 FullName = dto.FullName,
                 Phone = dto.Phone,
                 Address = dto.Address,
-                Role = "user"
+                Role = "user",
+                DateOfBirth = null
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -125,7 +126,7 @@ namespace SWP391_ITMMS_Api.Controllers
                 user.Email,
                 user.Address,
                 user.Phone,
-                dateOfBirth = user.DateOfBirth.ToString("yyyy-MM-dd")
+                dateOfBirth = user.DateOfBirth?.ToString("yyyy-MM-dd")
             });
         }
 
@@ -158,13 +159,16 @@ namespace SWP391_ITMMS_Api.Controllers
         [HttpPost("feedback")]
         public async Task<IActionResult> CreateUserFeedback([FromBody] CreateFeedbackDto dto)
         {
-            var feedback = new UserFeedback
+            var feedback = new Feedback
             {
-                UserId = dto.UserId,
-                Content = dto.Content,
+                CustomerId = dto.DoctorId, // Assuming this is the customer giving feedback
+                DoctorId = dto.DoctorId,
+                AppointmentId = dto.AppointmentId,
+                Rating = dto.Rating,
+                Comment = dto.Comment,
                 CreatedAt = DateTime.UtcNow
             };
-            _context.UserFeedbacks.Add(feedback);
+            _context.Feedbacks.Add(feedback);
             await _context.SaveChangesAsync();
             return Ok(new { message = "Feedback created" });
         }
@@ -172,15 +176,15 @@ namespace SWP391_ITMMS_Api.Controllers
 
     public class ChangePasswordModel
     {
-        public string Username { get; set; }
-        public string OldPassword { get; set; }
-        public string NewPassword { get; set; }
+        public string Username { get; set; } = "";
+        public string OldPassword { get; set; } = "";
+        public string NewPassword { get; set; } = "";
     }
 
     public class BlogPostDto
     {
-        public string Title { get; set; }
-        public string Content { get; set; }
+        public string Title { get; set; } = "";
+        public string Content { get; set; } = "";
     }
 
     public interface IBlogRepository
@@ -275,7 +279,7 @@ namespace SWP391_ITMMS_Api.Controllers
 
     public class LoginDto
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
     }
 } 

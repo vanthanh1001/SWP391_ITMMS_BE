@@ -152,8 +152,8 @@ namespace SWP391_ITMMS_Api.Data
 
             modelBuilder.Entity<Feedback>()
                 .HasOne(f => f.Appointment)
-                .WithMany(a => a.Feedbacks)
-                .HasForeignKey(f => f.AppointmentId)
+                .WithOne(a => a.Feedback)
+                .HasForeignKey<Feedback>(f => f.AppointmentId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             // BlogPost configurations

@@ -115,12 +115,12 @@ namespace SWP391_ITMMS_Api.Services
                 {
                     Id = mr.Id,
                     RecordDate = mr.RecordDate,
-                    DoctorName = mr.Doctor.User.FullName,
-                    Symptoms = mr.Symptoms,
-                    Diagnosis = mr.Diagnosis,
-                    Treatment = mr.Treatment,
-                    Prescription = mr.Prescription,
-                    AppointmentType = mr.Appointment.Type
+                    DoctorName = mr.Doctor != null && mr.Doctor.User != null ? mr.Doctor.User.FullName : "Unknown",
+                    Symptoms = mr.Symptoms ?? "",
+                    Diagnosis = mr.Diagnosis ?? "",
+                    Treatment = mr.Treatment ?? "",
+                    Prescription = mr.Prescription ?? "",
+                    AppointmentType = mr.Appointment != null ? mr.Appointment.Type : "Unknown"
                 })
                 .ToListAsync();
 

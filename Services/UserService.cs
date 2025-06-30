@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SWP391_ITMMS_Api.Data;
 using SWP391_ITMMS_Api.Models;
+using BCrypt.Net;
 
 namespace SWP391_ITMMS_Api.Services
 {

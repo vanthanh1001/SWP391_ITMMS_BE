@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace SWP391_ITMMS_Api.Models
 {
@@ -24,12 +25,14 @@ namespace SWP391_ITMMS_Api.Models
         [StringLength(100)]
         public string FullName { get; set; }
         
-        [Required]
         [Phone]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
         
         [StringLength(200)]
-        public string Address { get; set; }
+        public string? Address { get; set; }
+        
+        [JsonConverter(typeof(DateOnlyJsonConverter))]
+        public DateTime? DateOfBirth { get; set; }
         
         [Required]
         public string Role { get; set; } = "Customer"; // Guest, Customer, Doctor, Manager, Admin
@@ -42,6 +45,26 @@ namespace SWP391_ITMMS_Api.Models
         public virtual Doctor? Doctor { get; set; }
         public virtual Customer? Customer { get; set; }
         public virtual ICollection<BlogPost> BlogPosts { get; set; } = new List<BlogPost>();
+    }
+
+    public class DateOnlyJsonConverter : JsonConverter<DateTime?>
+    {
+        public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+                return null;
+            
+            var value = reader.GetString();
+            return value == null ? null : DateTime.Parse(value);
+        }
+
+        public override void Write(Utf8JsonWriter writer, DateTime? value, JsonSerializerOptions options)
+        {
+            if (value == null)
+                writer.WriteNullValue();
+            else
+                writer.WriteStringValue(value.Value.ToString("yyyy-MM-dd"));
+        }
     }
 
     public class Doctor
@@ -58,12 +81,12 @@ namespace SWP391_ITMMS_Api.Models
         public string LicenseNumber { get; set; }
         
         [StringLength(200)]
-        public string Education { get; set; }
+        public string? Education { get; set; }
         
         public int ExperienceYears { get; set; }
         
         [StringLength(1000)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
         
         [Column(TypeName = "decimal(10,2)")]
         public decimal ConsultationFee { get; set; }
@@ -94,16 +117,16 @@ namespace SWP391_ITMMS_Api.Models
         public DateTime? DateOfBirth { get; set; }
         
         [StringLength(10)]
-        public string Gender { get; set; } // Male, Female, Other
+        public string? Gender { get; set; } // Male, Female, Other
         
         [StringLength(20)]
-        public string MaritalStatus { get; set; } // Single, Married, Divorced, Widowed
+        public string? MaritalStatus { get; set; } // Single, Married, Divorced, Widowed
         
         [StringLength(100)]
-        public string EmergencyContact { get; set; }
+        public string? EmergencyContact { get; set; }
         
         [StringLength(1000)]
-        public string MedicalHistory { get; set; }
+        public string? MedicalHistory { get; set; }
 
         // Navigation properties
         [ForeignKey("UserId")]
@@ -130,10 +153,10 @@ namespace SWP391_ITMMS_Api.Models
         
         [Required]
         [StringLength(100)]
-        public string TreatmentType { get; set; } // IVF, IUI, Medication, Surgery, etc.
+        public string TreatmentType { get; set; }
         
         [StringLength(1000)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
         
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
@@ -190,27 +213,27 @@ namespace SWP391_ITMMS_Api.Models
         public DateTime AppointmentDate { get; set; }
         
         [StringLength(20)]
-        public string TimeSlot { get; set; } // 09:00-10:00, 10:00-11:00, etc.
+        public string TimeSlot { get; set; } = "";
         
         [StringLength(50)]
-        public string Type { get; set; } // Consultation, Follow-up, Treatment, Test
+        public string Type { get; set; } = "";
         
         [StringLength(20)]
         public string Status { get; set; } = "Scheduled"; // Scheduled, Completed, Cancelled, No-Show
         
-        [StringLength(500)]
-        public string Notes { get; set; }
+        [StringLength(1000)]
+        public string? Notes { get; set; }
         
         public DateTime? CompletedAt { get; set; }
 
         // Navigation properties
         [ForeignKey("CustomerId")]
         [JsonIgnore]
-        public virtual Customer Customer { get; set; }
+        public virtual Customer Customer { get; set; } = null!;
         
         [ForeignKey("DoctorId")]
         [JsonIgnore]
-        public virtual Doctor Doctor { get; set; }
+        public virtual Doctor Doctor { get; set; } = null!;
         
         [ForeignKey("TreatmentPlanId")]
         [JsonIgnore]
@@ -218,8 +241,9 @@ namespace SWP391_ITMMS_Api.Models
         
         [JsonIgnore]
         public virtual MedicalRecord? MedicalRecord { get; set; }
+        
         [JsonIgnore]
-        public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+        public virtual Feedback? Feedback { get; set; }
     }
 
     public class MedicalRecord
@@ -230,27 +254,30 @@ namespace SWP391_ITMMS_Api.Models
         public int AppointmentId { get; set; }
         
         [StringLength(500)]
-        public string Diagnosis { get; set; }
+        public string? Diagnosis { get; set; }
         
         [StringLength(1000)]
-        public string Symptoms { get; set; }
+        public string? Symptoms { get; set; }
         
         [StringLength(1000)]
-        public string Treatment { get; set; }
+        public string? Treatment { get; set; }
         
         [StringLength(1000)]
-        public string Prescription { get; set; }
+        public string? Prescription { get; set; }
         
         public DateTime RecordDate { get; set; } = DateTime.Now;
 
         // Navigation properties
         [ForeignKey("CustomerId")]
+        [JsonIgnore]
         public virtual Customer Customer { get; set; }
         
         [ForeignKey("DoctorId")]
+        [JsonIgnore]
         public virtual Doctor Doctor { get; set; }
         
         [ForeignKey("AppointmentId")]
+        [JsonIgnore]
         public virtual Appointment Appointment { get; set; }
         
         public virtual ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
@@ -289,33 +316,35 @@ namespace SWP391_ITMMS_Api.Models
         public int DoctorId { get; set; }
         
         [Required]
-        [StringLength(100)]
-        public string TestType { get; set; } // Blood Test, Ultrasound, X-Ray, etc.
+        [StringLength(50)]
+        public string TestType { get; set; } = "";
         
         [Required]
-        [StringLength(200)]
-        public string TestName { get; set; }
+        [StringLength(100)]
+        public string TestName { get; set; } = "";
         
-        [StringLength(1000)]
-        public string Results { get; set; }
+        [StringLength(50)]
+        public string Results { get; set; } = "";
         
-        [StringLength(200)]
-        public string NormalRange { get; set; }
+        [StringLength(100)]
+        public string? NormalRange { get; set; }
         
         [StringLength(20)]
-        public string Unit { get; set; }
+        public string? Unit { get; set; }
         
         public DateTime TestDate { get; set; }
         
         [StringLength(20)]
-        public string Status { get; set; } = "Pending"; // Pending, Completed, Abnormal
+        public string Status { get; set; } = "Pending";
 
         // Navigation properties
         [ForeignKey("CustomerId")]
-        public virtual Customer Customer { get; set; }
+        [JsonIgnore]
+        public virtual Customer Customer { get; set; } = null!;
         
         [ForeignKey("DoctorId")]
-        public virtual Doctor Doctor { get; set; }
+        [JsonIgnore]
+        public virtual Doctor Doctor { get; set; } = null!;
     }
 
     public class Feedback
@@ -329,18 +358,21 @@ namespace SWP391_ITMMS_Api.Models
         public int Rating { get; set; }
         
         [StringLength(1000)]
-        public string Comment { get; set; }
+        public string Comment { get; set; } = "";
         
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // Navigation properties
         [ForeignKey("CustomerId")]
-        public virtual Customer Customer { get; set; }
+        [JsonIgnore]
+        public virtual Customer Customer { get; set; } = null!;
         
         [ForeignKey("DoctorId")]
-        public virtual Doctor Doctor { get; set; }
+        [JsonIgnore]
+        public virtual Doctor Doctor { get; set; } = null!;
         
         [ForeignKey("AppointmentId")]
+        [JsonIgnore]
         public virtual Appointment? Appointment { get; set; }
     }
 
@@ -348,28 +380,31 @@ namespace SWP391_ITMMS_Api.Models
     public class RegisterUserDto
     {
         [Required]
-        public string FullName { get; set; }
+        [StringLength(50)]
+        public string Username { get; set; } = "";
         
         [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-        
-        [Required]
-        [Phone]
-        public string Phone { get; set; }
-        
-        public string Address { get; set; }
-        
-        [Required]
-        public string Username { get; set; }
-        
-        [Required]
-        [MinLength(6)]
-        public string Password { get; set; }
+        [StringLength(100)]
+        public string Password { get; set; } = "";
         
         [Required]
         [Compare("Password")]
-        public string ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; } = "";
+        
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+        
+        [Required]
+        [StringLength(100)]
+        public string FullName { get; set; } = "";
+        
+        [Required]
+        [Phone]
+        public string Phone { get; set; } = "";
+        
+        [StringLength(200)]
+        public string? Address { get; set; }
         
         public string Role { get; set; } = "Customer";
     }
@@ -378,23 +413,17 @@ namespace SWP391_ITMMS_Api.Models
     {
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = "";
         
         [Required]
-        public string Password { get; set; }
+        public string Password { get; set; } = "";
     }
 
     public class UpdateUserDto
     {
-        public string FullName { get; set; }
-        public string Phone { get; set; }
-        public string Address { get; set; }
-<<<<<<< HEAD
-        public DateTime DateOfBirth { get; set; }
-        [JsonIgnore]
-        public string Role { get; set; } = "user";
-=======
->>>>>>> upstream/Thanh`
+        public string? FullName { get; set; }
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
     }
 
     public class CreateAppointmentDto
@@ -408,12 +437,12 @@ namespace SWP391_ITMMS_Api.Models
         public DateTime AppointmentDate { get; set; }
         
         [Required]
-        public string TimeSlot { get; set; }
+        public string TimeSlot { get; set; } = "";
         
         [Required]
-        public string Type { get; set; }
+        public string Type { get; set; } = "";
         
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
     }
 
     public class CreateFeedbackDto
@@ -427,7 +456,7 @@ namespace SWP391_ITMMS_Api.Models
         [Range(1, 5)]
         public int Rating { get; set; }
         
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
     }
 
     // Legacy classes for backward compatibility
@@ -435,7 +464,7 @@ namespace SWP391_ITMMS_Api.Models
     {
         public int Id { get; set; }
         public int UserId { get; set; }
-        public string Description { get; set; }
+        public string Description { get; set; } = "";
         public DateTime Date { get; set; }
     }
 
@@ -562,12 +591,6 @@ namespace SWP391_ITMMS_Api.Models
         public string Phone { get; set; }
         public string Address { get; set; }
         public DateTime DateOfBirth { get; set; }
-    }
-
-    public class CreateFeedbackDto
-    {
-        public int UserId { get; set; }
-        public string Content { get; set; }
     }
 
     public class TreatmentHistoryCreateDto

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SWP391_ITMMS_Api.Data;
 using SWP391_ITMMS_Api.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace SWP391_ITMMS_Api.Controllers
 {
@@ -297,13 +298,28 @@ namespace SWP391_ITMMS_Api.Controllers
     // DTO for TreatmentService
     public class TreatmentServiceDto
     {
-        public string ServiceName { get; set; }
-        public string ServiceCode { get; set; }
-        public string Description { get; set; }
+        [Required]
+        public string ServiceName { get; set; } = "";
+        
+        [Required]
+        public string ServiceCode { get; set; } = "";
+        
+        [Required]
+        public string Description { get; set; } = "";
+        
+        [Required]
         public decimal BasePrice { get; set; }
-        public string Procedures { get; set; }
-        public string Requirements { get; set; }
+        
+        [Required]
+        public string Procedures { get; set; } = "";
+        
+        [Required]
+        public string Requirements { get; set; } = "";
+        
+        [Required]
         public int DurationDays { get; set; }
+        
+        [Required]
         public float SuccessRate { get; set; }
     }
 } 

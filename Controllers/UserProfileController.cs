@@ -38,7 +38,7 @@ namespace SWP391_ITMMS_Api.Controllers
             user.FullName = updateDto.FullName;
             user.Phone = updateDto.Phone;
             user.Address = updateDto.Address;
-            user.DateOfBirth = updateDto.DateOfBirth;
+            user.DateOfBirth = updateDto.DateOfBirth.Date;
             _context.SaveChanges();
             return Ok(user);
         }

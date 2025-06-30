@@ -61,7 +61,7 @@ namespace SWP391_ITMMS_Api.Controllers
                             d.Specialization,
                             d.ExperienceYears,
                             d.Education,
-                            Description = d.Description.Length > 100 ? 
+                            Description = d.Description != null && d.Description.Length > 100 ? 
                                 d.Description.Substring(0, 100) + "..." : d.Description
                         })
                         .Take(3)
@@ -432,13 +432,13 @@ namespace SWP391_ITMMS_Api.Controllers
                     services = type == "all" || type == "services" ? 
                         await _context.TreatmentServices
                             .Where(s => s.IsActive && 
-                                (s.ServiceName.Contains(keyword) || s.Description.Contains(keyword)))
+                                (s.ServiceName.Contains(keyword) || (s.Description != null && s.Description.Contains(keyword))))
                             .Select(s => new {
                                 s.Id,
                                 s.ServiceName,
                                 s.ServiceCode,
                                 s.BasePrice,
-                                Description = s.Description.Length > 100 ? 
+                                Description = s.Description != null && s.Description.Length > 100 ? 
                                     s.Description.Substring(0, 100) + "..." : s.Description
                             })
                             .Take(5)
@@ -449,13 +449,13 @@ namespace SWP391_ITMMS_Api.Controllers
                             .Where(d => d.IsAvailable && 
                                 (d.User.FullName.Contains(keyword) || 
                                  d.Specialization.Contains(keyword) ||
-                                 d.Description.Contains(keyword)))
+                                 (d.Description != null && d.Description.Contains(keyword))))
                             .Select(d => new {
                                 d.Id,
                                 DoctorName = d.User.FullName,
                                 d.Specialization,
                                 d.ExperienceYears,
-                                Description = d.Description.Length > 100 ? 
+                                Description = d.Description != null && d.Description.Length > 100 ? 
                                     d.Description.Substring(0, 100) + "..." : d.Description
                             })
                             .Take(5)
