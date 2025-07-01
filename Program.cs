@@ -96,8 +96,13 @@ app.UseSwaggerUI();
 // Sử dụng CORS
 app.UseCors("AllowAll");
 
-app.UseHttpsRedirection();
+// Tạm comment UseHttpsRedirection cho development  
+// app.UseHttpsRedirection();
 app.UseAuthentication();
+
+// Thêm custom JWT middleware (commented out for now)
+// app.UseMiddleware<JwtMiddleware>();
+
 app.UseAuthorization();
 app.MapControllers();
 

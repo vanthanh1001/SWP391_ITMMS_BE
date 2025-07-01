@@ -9,6 +9,7 @@ C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Az
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Azure.Identity.dll
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\BCrypt.Net-Next.dll
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Humanizer.dll
+C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Microsoft.AspNetCore.OpenApi.dll
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Microsoft.CodeAnalysis.dll
@@ -137,4 +138,3 @@ C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\obj\Debug\net8.0\re
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\obj\Debug\net8.0\SWP391_ITMMS_Api.pdb
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\obj\Debug\net8.0\SWP391_ITMMS_Api.genruntimeconfig.cache
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\obj\Debug\net8.0\ref\SWP391_ITMMS_Api.dll
-C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

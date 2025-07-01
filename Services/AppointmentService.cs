@@ -27,18 +27,43 @@ namespace SWP391_ITMMS_Api.Services
 
             // Validate doctor exists and is available
             var doctor = await _context.Doctors.FindAsync(appointmentDto.DoctorId);
-            if (doctor == null || !doctor.IsAvailable)
-                throw new InvalidOperationException("Bác sĩ không tồn tại hoặc không khả dụng");
+            if (doctor == null)
+                throw new InvalidOperationException("Bác sĩ không tồn tại");
+            
+            if (!doctor.IsAvailable)
+                throw new InvalidOperationException("Bác sĩ hiện không khả dụng");
+
+            // Validate TreatmentPlanId if provided
+            int? treatmentPlanId = null;
+            if (appointmentDto.TreatmentPlanId.HasValue && appointmentDto.TreatmentPlanId.Value > 0)
+            {
+                var treatmentPlan = await _context.TreatmentPlans.FindAsync(appointmentDto.TreatmentPlanId.Value);
+                if (treatmentPlan == null)
+                    throw new InvalidOperationException("Kế hoạch điều trị không tồn tại");
+                
+                if (treatmentPlan.CustomerId != customerId)
+                    throw new InvalidOperationException("Kế hoạch điều trị không thuộc về khách hàng này");
+                
+                treatmentPlanId = appointmentDto.TreatmentPlanId.Value;
+            }
 
             // Check if time slot is available
             if (!await IsTimeSlotAvailableAsync(appointmentDto.DoctorId, appointmentDto.AppointmentDate, appointmentDto.TimeSlot))
                 throw new InvalidOperationException("Khung giờ này đã được đặt");
 
+            // Validate time slot format
+            if (!_timeSlots.Contains(appointmentDto.TimeSlot))
+                throw new InvalidOperationException("Khung giờ không hợp lệ");
+
+            // Check appointment date is not in the past
+            if (appointmentDto.AppointmentDate.Date < DateTime.Now.Date)
+                throw new InvalidOperationException("Không thể đặt lịch hẹn trong quá khứ");
+
             var appointment = new Appointment
             {
                 CustomerId = customerId,
                 DoctorId = appointmentDto.DoctorId,
-                TreatmentPlanId = appointmentDto.TreatmentPlanId,
+                TreatmentPlanId = treatmentPlanId,
                 AppointmentDate = appointmentDto.AppointmentDate,
                 TimeSlot = appointmentDto.TimeSlot,
                 Type = appointmentDto.Type,
@@ -46,10 +71,17 @@ namespace SWP391_ITMMS_Api.Services
                 Notes = appointmentDto.Notes ?? ""
             };
 
-            _context.Appointments.Add(appointment);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Appointments.Add(appointment);
+                await _context.SaveChangesAsync();
 
-            return await GetAppointmentByIdAsync(appointment.Id) ?? appointment;
+                return await GetAppointmentByIdAsync(appointment.Id) ?? appointment;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Lỗi khi lưu lịch hẹn: {ex.Message}", ex);
+            }
         }
 
         public async Task<Appointment?> GetAppointmentByIdAsync(int id)

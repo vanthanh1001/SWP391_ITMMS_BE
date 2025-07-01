@@ -117,7 +117,7 @@ namespace SWP391_ITMMS_Api.Services
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
 
-                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
+                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier) ?? principal.FindFirst("nameid");
                 return userIdClaim != null ? int.Parse(userIdClaim.Value) : null;
             }
             catch

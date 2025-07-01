@@ -35,53 +35,85 @@ namespace SWP391_ITMMS_Api.Services
             if (await UsernameExistsAsync(registerDto.Username))
                 throw new InvalidOperationException("Username đã được sử dụng");
 
-            var user = new User
+            // Start transaction để đảm bảo data consistency
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            
+            try
             {
-                Username = registerDto.Username,
-                Password = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
-                Email = registerDto.Email,
-                FullName = registerDto.FullName,
-                Phone = registerDto.Phone,
-                Address = registerDto.Address ?? "",
-                Role = registerDto.Role,
-                CreatedAt = DateTime.Now,
-                IsActive = true
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            // Create profile based on role
-            if (registerDto.Role == "Customer")
-            {
-                var customer = new Customer
+                var user = new User
                 {
-                    UserId = user.Id,
-                    Gender = "",
-                    MaritalStatus = "",
-                    EmergencyContact = "",
-                    MedicalHistory = ""
+                    Username = registerDto.Username,
+                    Password = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
+                    Email = registerDto.Email,
+                    FullName = registerDto.FullName,
+                    Phone = registerDto.Phone,
+                    Address = registerDto.Address ?? "",
+                    Role = registerDto.Role,
+                    CreatedAt = DateTime.Now,
+                    IsActive = true
                 };
-                _context.Customers.Add(customer);
-            }
-            else if (registerDto.Role == "Doctor")
-            {
-                var doctor = new Doctor
-                {
-                    UserId = user.Id,
-                    Specialization = "",
-                    LicenseNumber = "",
-                    Education = "",
-                    ExperienceYears = 0,
-                    Description = "",
-                    ConsultationFee = 0,
-                    IsAvailable = false // Admin needs to approve
-                };
-                _context.Doctors.Add(doctor);
-            }
 
-            await _context.SaveChangesAsync();
-            return user;
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                // Create profile based on role
+                if (registerDto.Role == "Customer")
+                {
+                    var customer = new Customer
+                    {
+                        UserId = user.Id,
+                        Gender = "",
+                        MaritalStatus = "",
+                        EmergencyContact = "",
+                        MedicalHistory = ""
+                    };
+                    _context.Customers.Add(customer);
+                }
+                else if (registerDto.Role == "Doctor")
+                {
+                    // Generate unique license number
+                    var licenseNumber = await GenerateUniqueLicenseNumberAsync();
+                    
+                    var doctor = new Doctor
+                    {
+                        UserId = user.Id,
+                        Specialization = "Chưa cập nhật",
+                        LicenseNumber = licenseNumber,
+                        Education = "Chưa cập nhật",
+                        ExperienceYears = 0,
+                        Description = "Chưa cập nhật",
+                        ConsultationFee = 0,
+                        IsAvailable = false // Admin needs to approve
+                    };
+                    _context.Doctors.Add(doctor);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                
+                return user;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new InvalidOperationException($"Lỗi khi tạo tài khoản: {ex.Message}");
+            }
+        }
+
+        private async Task<string> GenerateUniqueLicenseNumberAsync()
+        {
+            string licenseNumber;
+            bool exists;
+            int counter = 1;
+            
+            do
+            {
+                licenseNumber = $"BS{DateTime.Now:yyyyMMdd}{counter:D3}";
+                exists = await _context.Doctors.AnyAsync(d => d.LicenseNumber == licenseNumber);
+                counter++;
+            } while (exists);
+            
+            return licenseNumber;
         }
 
         public async Task<User?> GetUserByIdAsync(int id)
