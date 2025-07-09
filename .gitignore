@@ -53,3 +53,7 @@ msbuild.wrn
 # NuGet v3's project.json files produces more ignorable files
 *.nuget.props
 *.nuget.targets 
+# Firebase secret key (KHÔNG được push lên GitHub)
+serviceAccountKey.json
+# Firebase credentials
+**/serviceAccountKey.json
