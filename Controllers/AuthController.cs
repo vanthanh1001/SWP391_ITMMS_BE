@@ -1,4 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using SWP391_ITMMS_Api.Models;
 using SWP391_ITMMS_Api.Services;
 
@@ -9,127 +13,104 @@ namespace SWP391_ITMMS_Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(IUserService userService)
+        public AuthController(IUserService userService, IConfiguration configuration)
         {
             _userService = userService;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserDto registerDto)
+        public async Task<ActionResult<User>> Register([FromBody] RegisterRequest request)
         {
-            try
+            if (await _userService.IsEmailUniqueAsync(request.Email))
             {
-                if (!ModelState.IsValid)
+                var user = new User
                 {
-                    return BadRequest(new { message = "Dữ liệu không hợp lệ", errors = ModelState });
-                }
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    Email = request.Email,
+                    Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                    Role = request.Role ?? "Customer",
+                    Phone = request.Phone,
+                    Address = request.Address,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true
+                };
 
-                var user = await _userService.RegisterAsync(registerDto);
-                
-                return Ok(new 
-                { 
-                    message = "Đăng ký thành công", 
-                    user = new 
-                    {
-                        user.Id,
-                        user.Username,
-                        user.Email,
-                        user.FullName,
-                        user.Phone,
-                        user.Role
-                    }
-                });
+                var createdUser = await _userService.CreateUserAsync(user);
+                return Ok(new { message = "User registered successfully", userId = createdUser.Id });
             }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
-            }
+
+            return BadRequest(new { message = "Email already exists" });
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<ActionResult<string>> Login([FromBody] LoginRequest request)
         {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new { message = "Dữ liệu không hợp lệ", errors = ModelState });
-                }
+            var user = await _userService.GetUserByEmailAsync(request.Email);
 
-                var user = await _userService.AuthenticateAsync(loginDto.Email, loginDto.Password);
-                
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Email hoặc mật khẩu không đúng" });
-                }
-
-                return Ok(new 
-                { 
-                    message = "Đăng nhập thành công", 
-                    user = new 
-                    {
-                        user.Id,
-                        user.Username,
-                        user.Email,
-                        user.FullName,
-                        user.Phone,
-                        user.Role,
-                        Doctor = user.Doctor != null ? new 
-                        {
-                            user.Doctor.Id,
-                            user.Doctor.Specialization,
-                            user.Doctor.LicenseNumber,
-                            user.Doctor.ExperienceYears,
-                            user.Doctor.ConsultationFee,
-                            user.Doctor.IsAvailable
-                        } : null,
-                        Customer = user.Customer != null ? new 
-                        {
-                            user.Customer.Id,
-                            user.Customer.DateOfBirth,
-                            user.Customer.Gender,
-                            user.Customer.MaritalStatus
-                        } : null
-                    }
-                });
-            }
-            catch (Exception)
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
             {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
+                return Unauthorized(new { message = "Invalid email or password" });
             }
+
+            if (!user.IsActive)
+            {
+                return BadRequest(new { message = "Account is deactivated" });
+            }
+
+            var token = GenerateJwtToken(user);
+            return Ok(new { token, user.Role });
         }
 
-        [HttpPost("check-email")]
-        public async Task<IActionResult> CheckEmailExists([FromBody] string email)
+        private string GenerateJwtToken(User user)
         {
-            try
+            var jwtKey = _configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(jwtKey))
             {
-                var exists = await _userService.EmailExistsAsync(email);
-                return Ok(new { exists });
+                throw new InvalidOperationException("JWT key not configured");
             }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
-            }
-        }
 
-        [HttpPost("check-username")]
-        public async Task<IActionResult> CheckUsernameExists([FromBody] string username)
-        {
-            try
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
             {
-                var exists = await _userService.UsernameExistsAsync(username);
-                return Ok(new { exists });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
-            }
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("FirstName", user.FirstName),
+                new Claim("LastName", user.LastName)
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
+    }
+
+    public class RegisterRequest
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string? Role { get; set; }
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+    }
+
+    public class LoginRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 } 

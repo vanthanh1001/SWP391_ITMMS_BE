@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using SWP391_ITMMS_Api.Models;
+using Microsoft.EntityFrameworkCore;
 using SWP391_ITMMS_Api.Data;
-using System.Collections.Generic;
-using System.Linq;
-using System;
+using SWP391_ITMMS_Api.Models;
+using SWP391_ITMMS_Api.Models.DTOs;
 
 namespace SWP391_ITMMS_Api.Controllers
 {
@@ -12,58 +11,86 @@ namespace SWP391_ITMMS_Api.Controllers
     public class UserProfileController : ControllerBase
     {
         private readonly AppDbContext _context;
+
         public UserProfileController(AppDbContext context)
         {
             _context = context;
         }
 
-        // Lấy hồ sơ người dùng
-        [HttpGet("{userId}")]
-        public ActionResult<User> GetUserProfile(int userId)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserResponseDto>> GetProfile(int id)
         {
-            var user = _context.Users.Find(userId);
-            if (user == null) return NotFound();
-            return Ok(user);
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new UserResponseDto
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Role = user.Role,
+                Phone = user.Phone,
+                Address = user.Address,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt
+            });
         }
 
-        // Sửa hồ sơ người dùng
-        [HttpPut("{userId}")]
-        public ActionResult<User> UpdateUserProfile(int userId, [FromBody] UserUpdateDto updateDto)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<UserResponseDto>> UpdateProfile(int id, UserUpdateDto updateDto)
         {
-            var user = _context.Users.Find(userId);
-            if (user == null) return NotFound();
-            user.Username = updateDto.Username;
-            user.Password = updateDto.Password;
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.FirstName = updateDto.FirstName;
+            user.LastName = updateDto.LastName;
             user.Email = updateDto.Email;
-            user.FullName = updateDto.FullName;
             user.Phone = updateDto.Phone;
             user.Address = updateDto.Address;
-            user.DateOfBirth = updateDto.DateOfBirth.Date;
-            _context.SaveChanges();
-            return Ok(user);
-        }
+            user.UpdatedAt = DateTime.UtcNow;
 
-        // Lấy lịch sử điều trị của người dùng
-        [HttpGet("{userId}/treatment-history")]
-        public ActionResult<IEnumerable<TreatmentHistory>> GetTreatmentHistory(int userId)
-        {
-            var histories = _context.TreatmentHistories.Where(t => t.UserId == userId).ToList();
-            return Ok(histories);
-        }
-
-        // Thêm lịch sử điều trị cho user
-        [HttpPost("{userId}/treatment-history")]
-        public IActionResult AddTreatmentHistory(int userId, [FromBody] TreatmentHistoryCreateDto dto)
-        {
-            var history = new TreatmentHistory
+            if (!string.IsNullOrEmpty(updateDto.Password))
             {
-                UserId = userId,
-                Description = dto.Description,
-                Date = DateTime.UtcNow
-            };
-            _context.TreatmentHistories.Add(history);
-            _context.SaveChanges();
-            return Ok(history);
+                user.Password = BCrypt.Net.BCrypt.HashPassword(updateDto.Password);
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await UserExists(id))
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+
+            return Ok(new UserResponseDto
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Role = user.Role,
+                Phone = user.Phone,
+                Address = user.Address,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt
+            });
+        }
+
+        private async Task<bool> UserExists(int id)
+        {
+            return await _context.Users.AnyAsync(e => e.Id == id);
         }
     }
 } 

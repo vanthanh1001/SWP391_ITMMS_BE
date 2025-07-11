@@ -43,11 +43,9 @@ namespace SWP391_ITMMS_Api.Controllers
                         .Where(s => s.IsActive)
                         .Select(s => new {
                             s.Id,
-                            s.ServiceName,
-                            s.ServiceCode,
-                            s.BasePrice,
-                            s.SuccessRate,
-                            Description = s.Description.Length > 150 ? 
+                            s.Name,
+                            s.Price,
+                            Description = s.Description != null && s.Description.Length > 150 ? 
                                 s.Description.Substring(0, 150) + "..." : s.Description
                         })
                         .Take(4)
@@ -57,7 +55,7 @@ namespace SWP391_ITMMS_Api.Controllers
                         .Where(d => d.IsAvailable)
                         .Select(d => new {
                             d.Id,
-                            DoctorName = d.User.FullName,
+                            FullName = d.User.FirstName + " " + d.User.LastName,
                             d.Specialization,
                             d.ExperienceYears,
                             d.Education,
@@ -87,28 +85,30 @@ namespace SWP391_ITMMS_Api.Controllers
         /// Danh sách tất cả dịch vụ điều trị (Public)
         /// </summary>
         [HttpGet("services")]
-        public async Task<IActionResult> GetAllServices()
+        public async Task<ActionResult<IEnumerable<object>>> GetServices()
         {
-            try
-            {
-                var services = await _context.TreatmentServices
-                    .Where(s => s.IsActive)
-                    .OrderBy(s => s.ServiceName)
-                    .ToListAsync();
+            var services = await _context.TreatmentServices
+                .Include(s => s.Category)
+                .Where(s => s.IsActive)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.Description,
+                    s.Price,
+                    s.Duration,
+                    Category = s.Category != null ? new
+                    {
+                        s.Category.Id,
+                        s.Category.Name,
+                        s.Category.Description
+                    } : null,
+                    s.CreatedAt
+                })
+                .OrderBy(s => s.Name)
+                .ToListAsync();
 
-                return Ok(new { 
-                    success = true,
-                    data = services,
-                    message = "Lấy danh sách dịch vụ thành công"
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { 
-                    success = false, 
-                    message = $"Lỗi hệ thống: {ex.Message}" 
-                });
-            }
+            return Ok(services);
         }
 
         /// <summary>
@@ -150,40 +150,27 @@ namespace SWP391_ITMMS_Api.Controllers
         /// Danh sách bác sĩ (Public)
         /// </summary>
         [HttpGet("doctors")]
-        public async Task<IActionResult> GetAllDoctors()
+        public async Task<ActionResult<IEnumerable<object>>> GetDoctors()
         {
-            try
-            {
-                var doctors = await _context.Doctors
-                    .Include(d => d.User)
-                    .Where(d => d.IsAvailable)
-                    .Select(d => new {
-                        d.Id,
-                        DoctorName = d.User.FullName,
-                        d.Specialization,
-                        d.ExperienceYears,
-                        d.Education,
-                        d.Description,
-                        d.ConsultationFee,
-                        AverageRating = d.ReceivedFeedbacks.Any() ? d.ReceivedFeedbacks.Average(f => f.Rating) : 0,
-                        TotalFeedbacks = d.ReceivedFeedbacks.Count()
-                    })
-                    .OrderByDescending(d => d.ExperienceYears)
-                    .ToListAsync();
+            var doctors = await _context.Doctors
+                .Include(d => d.User)
+                .Where(d => d.IsAvailable && d.User.IsActive)
+                .Select(d => new
+                {
+                    d.Id,
+                    FullName = $"{d.User.FirstName} {d.User.LastName}",
+                    d.User.Email,
+                    d.Specialization,
+                    d.Education,
+                    d.ExperienceYears,
+                    d.Description,
+                    d.ConsultationFee,
+                    AverageRating = d.ReceivedFeedbacks.Any() ? 
+                        d.ReceivedFeedbacks.Average(f => f.Rating) : 0
+                })
+                .ToListAsync();
 
-                return Ok(new { 
-                    success = true,
-                    data = doctors,
-                    message = "Lấy danh sách bác sĩ thành công"
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { 
-                    success = false, 
-                    message = $"Lỗi hệ thống: {ex.Message}" 
-                });
-            }
+            return Ok(doctors);
         }
 
         /// <summary>
@@ -199,7 +186,7 @@ namespace SWP391_ITMMS_Api.Controllers
                     .Where(d => d.Id == id && d.IsAvailable)
                     .Select(d => new {
                         d.Id,
-                        DoctorName = d.User.FullName,
+                        FullName = d.User.FirstName + " " + d.User.LastName,
                         d.Specialization,
                         d.LicenseNumber,
                         d.Education,
@@ -249,86 +236,17 @@ namespace SWP391_ITMMS_Api.Controllers
                     .OrderByDescending(f => f.CreatedAt)
                     .Select(f => new {
                         f.Id,
+                        PatientName = f.Customer.User.FirstName + " " + f.Customer.User.LastName,
                         f.Rating,
                         f.Comment,
-                        f.CreatedAt,
-                        CustomerName = f.Customer.User.FullName,
-                        // Ẩn một phần tên để bảo mật
-                        MaskedCustomerName = f.Customer.User.FullName.Length > 2 ? 
-                            f.Customer.User.FullName.Substring(0, 1) + "***" + 
-                            f.Customer.User.FullName.Substring(f.Customer.User.FullName.Length - 1) : 
-                            "***"
-                    })
-                    .Take(10)
-                    .ToListAsync();
-
-                var averageRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
-
-                return Ok(new { 
-                    success = true,
-                    data = new {
-                        averageRating = Math.Round(averageRating, 1),
-                        totalReviews = reviews.Count,
-                        reviews
-                    },
-                    message = "Lấy đánh giá bác sĩ thành công"
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { 
-                    success = false, 
-                    message = $"Lỗi hệ thống: {ex.Message}" 
-                });
-            }
-        }
-
-        /// <summary>
-        /// Bài viết blog công khai
-        /// </summary>
-        [HttpGet("blog")]
-        public async Task<IActionResult> GetPublicBlogPosts([FromQuery] string? category = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            try
-            {
-                var query = _context.BlogPosts
-                    .Include(bp => bp.Author)
-                    .Where(bp => bp.IsPublished);
-
-                if (!string.IsNullOrEmpty(category))
-                {
-                    query = query.Where(bp => bp.Category == category);
-                }
-
-                var totalPosts = await query.CountAsync();
-                var posts = await query
-                    .OrderByDescending(bp => bp.CreatedAt)
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(bp => new {
-                        bp.Id,
-                        bp.Title,
-                        bp.Category,
-                        bp.CreatedAt,
-                        AuthorName = bp.Author.FullName,
-                        // Excerpt - 200 ký tự đầu
-                        Excerpt = bp.Content.Length > 200 ? 
-                            bp.Content.Substring(0, 200) + "..." : bp.Content
+                        f.CreatedAt
                     })
                     .ToListAsync();
 
                 return Ok(new { 
                     success = true,
-                    data = new {
-                        posts,
-                        pagination = new {
-                            currentPage = page,
-                            pageSize,
-                            totalPosts,
-                            totalPages = (int)Math.Ceiling((double)totalPosts / pageSize)
-                        }
-                    },
-                    message = "Lấy danh sách blog thành công"
+                    data = reviews,
+                    message = "Lấy danh sách đánh giá thành công"
                 });
             }
             catch (Exception ex)
@@ -341,53 +259,69 @@ namespace SWP391_ITMMS_Api.Controllers
         }
 
         /// <summary>
-        /// Chi tiết bài viết blog
+        /// Danh sách bài viết blog (Public)
         /// </summary>
-        [HttpGet("blog/{id}")]
-        public async Task<IActionResult> GetBlogPost(int id)
+        [HttpGet("blogs")]
+        public async Task<ActionResult<IEnumerable<object>>> GetBlogs()
         {
-            try
-            {
-                var post = await _context.BlogPosts
-                    .Include(bp => bp.Author)
-                    .Where(bp => bp.Id == id && bp.IsPublished)
-                    .Select(bp => new {
-                        bp.Id,
-                        bp.Title,
-                        bp.Content,
-                        bp.Category,
-                        bp.CreatedAt,
-                        bp.UpdatedAt,
-                        AuthorName = bp.Author.FullName,
-                        AuthorRole = bp.Author.Role
-                    })
-                    .FirstOrDefaultAsync();
-
-                if (post == null)
+            var blogs = await _context.BlogPosts
+                .Include(b => b.Author)
+                .Where(b => b.IsPublished)
+                .Select(b => new
                 {
-                    return NotFound(new { 
-                        success = false,
-                        message = "Không tìm thấy bài viết" 
-                    });
-                }
+                    b.Id,
+                    b.Title,
+                    b.Content,
+                    Author = new
+                    {
+                        b.Author.Id,
+                        FullName = $"{b.Author.FirstName} {b.Author.LastName}",
+                        b.Author.Email
+                    },
+                    b.CreatedAt,
+                    b.UpdatedAt
+                })
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync();
 
-                return Ok(new { 
-                    success = true,
-                    data = post,
-                    message = "Lấy chi tiết bài viết thành công"
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { 
-                    success = false, 
-                    message = $"Lỗi hệ thống: {ex.Message}" 
-                });
-            }
+            return Ok(blogs);
         }
 
         /// <summary>
-        /// Danh mục blog
+        /// Chi tiết bài viết blog (Public)
+        /// </summary>
+        [HttpGet("blogs/{id}")]
+        public async Task<ActionResult<object>> GetBlog(int id)
+        {
+            var blog = await _context.BlogPosts
+                .Include(b => b.Author)
+                .Where(b => b.Id == id && b.IsPublished)
+                .Select(b => new
+                {
+                    b.Id,
+                    b.Title,
+                    b.Content,
+                    Author = new
+                    {
+                        b.Author.Id,
+                        FullName = $"{b.Author.FirstName} {b.Author.LastName}",
+                        b.Author.Email
+                    },
+                    b.CreatedAt,
+                    b.UpdatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (blog == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(blog);
+        }
+
+        /// <summary>
+        /// Danh sách danh mục blog (Public)
         /// </summary>
         [HttpGet("blog/categories")]
         public async Task<IActionResult> GetBlogCategories()
@@ -395,19 +329,15 @@ namespace SWP391_ITMMS_Api.Controllers
             try
             {
                 var categories = await _context.BlogPosts
-                    .Where(bp => bp.IsPublished)
-                    .GroupBy(bp => bp.Category)
-                    .Select(g => new {
-                        Category = g.Key,
-                        PostCount = g.Count()
-                    })
-                    .OrderByDescending(c => c.PostCount)
+                    .Where(b => b.IsPublished)
+                    .Select(b => b.Category)
+                    .Distinct()
                     .ToListAsync();
 
                 return Ok(new { 
                     success = true,
                     data = categories,
-                    message = "Lấy danh mục blog thành công"
+                    message = "Lấy danh sách danh mục thành công"
                 });
             }
             catch (Exception ex)
@@ -420,68 +350,70 @@ namespace SWP391_ITMMS_Api.Controllers
         }
 
         /// <summary>
-        /// Tìm kiếm (dịch vụ, bác sĩ, blog)
+        /// Tìm kiếm (Public)
         /// </summary>
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string keyword, [FromQuery] string type = "all")
         {
             try
             {
-                var result = new {
-                    keyword,
-                    services = type == "all" || type == "services" ? 
-                        await _context.TreatmentServices
-                            .Where(s => s.IsActive && 
-                                (s.ServiceName.Contains(keyword) || (s.Description != null && s.Description.Contains(keyword))))
-                            .Select(s => new {
-                                s.Id,
-                                s.ServiceName,
-                                s.ServiceCode,
-                                s.BasePrice,
-                                Description = s.Description != null && s.Description.Length > 100 ? 
-                                    s.Description.Substring(0, 100) + "..." : s.Description
-                            })
-                            .Take(5)
-                            .ToListAsync() : null,
-                    doctors = type == "all" || type == "doctors" ?
-                        await _context.Doctors
-                            .Include(d => d.User)
-                            .Where(d => d.IsAvailable && 
-                                (d.User.FullName.Contains(keyword) || 
-                                 d.Specialization.Contains(keyword) ||
-                                 (d.Description != null && d.Description.Contains(keyword))))
-                            .Select(d => new {
-                                d.Id,
-                                DoctorName = d.User.FullName,
-                                d.Specialization,
-                                d.ExperienceYears,
-                                Description = d.Description != null && d.Description.Length > 100 ? 
-                                    d.Description.Substring(0, 100) + "..." : d.Description
-                            })
-                            .Take(5)
-                            .ToListAsync() : null,
-                    blogs = type == "all" || type == "blogs" ?
-                        await _context.BlogPosts
-                            .Include(bp => bp.Author)
-                            .Where(bp => bp.IsPublished && 
-                                (bp.Title.Contains(keyword) || bp.Content.Contains(keyword)))
-                            .Select(bp => new {
-                                bp.Id,
-                                bp.Title,
-                                bp.Category,
-                                bp.CreatedAt,
-                                AuthorName = bp.Author.FullName,
-                                Excerpt = bp.Content.Length > 150 ? 
-                                    bp.Content.Substring(0, 150) + "..." : bp.Content
-                            })
-                            .Take(5)
-                            .ToListAsync() : null
-                };
+                var result = new Dictionary<string, object>();
+
+                if (type == "all" || type == "doctors")
+                {
+                    var doctors = await _context.Doctors
+                        .Include(d => d.User)
+                        .Where(d => d.IsAvailable && 
+                            (d.User.FirstName.Contains(keyword) || 
+                             d.User.LastName.Contains(keyword) ||
+                             d.Specialization.Contains(keyword)))
+                        .Select(d => new {
+                            d.Id,
+                            FullName = d.User.FirstName + " " + d.User.LastName,
+                            d.Specialization,
+                            d.ExperienceYears
+                        })
+                        .ToListAsync();
+                    result.Add("doctors", doctors);
+                }
+
+                if (type == "all" || type == "services")
+                {
+                    var services = await _context.TreatmentServices
+                        .Where(s => s.IsActive && 
+                            (s.Name.Contains(keyword) || 
+                             s.Description.Contains(keyword)))
+                        .Select(s => new {
+                            s.Id,
+                            s.Name,
+                            s.Price
+                        })
+                        .ToListAsync();
+                    result.Add("services", services);
+                }
+
+                if (type == "all" || type == "blog")
+                {
+                    var posts = await _context.BlogPosts
+                        .Include(b => b.Author)
+                        .Where(b => b.IsPublished && 
+                            (b.Title.Contains(keyword) || 
+                             b.Content.Contains(keyword) ||
+                             b.Category.Contains(keyword)))
+                        .Select(b => new {
+                            b.Id,
+                            b.Title,
+                            b.Category,
+                            AuthorName = b.Author.FirstName + " " + b.Author.LastName
+                        })
+                        .ToListAsync();
+                    result.Add("blog", posts);
+                }
 
                 return Ok(new { 
                     success = true,
                     data = result,
-                    message = $"Tìm kiếm '{keyword}' thành công"
+                    message = "Tìm kiếm thành công"
                 });
             }
             catch (Exception ex)
@@ -494,40 +426,50 @@ namespace SWP391_ITMMS_Api.Controllers
         }
 
         /// <summary>
-        /// FAQ - Câu hỏi thường gặp
+        /// Câu hỏi thường gặp (Public)
         /// </summary>
         [HttpGet("faq")]
         public IActionResult GetFAQ()
         {
-            var faqs = new List<object>
+            try
             {
-                new {
-                    question = "Điều trị hiếm muộn có đau không?",
-                    answer = "Các thủ thuật điều trị hiếm muộn hiện đại thường không gây đau đáng kể. Bác sĩ sẽ sử dụng gây tê cục bộ hoặc an thần nhẹ khi cần thiết."
-                },
-                new {
-                    question = "Tỷ lệ thành công của IVF là bao nhiêu?",
-                    answer = "Tỷ lệ thành công của IVF phụ thuộc vào nhiều yếu tố như tuổi, nguyên nhân hiếm muộn. Trung bình tại trung tâm chúng tôi là 65-70%."
-                },
-                new {
-                    question = "Chi phí điều trị hiếm muộn là bao nhiêu?",
-                    answer = "Chi phí phụ thuộc vào phương pháp điều trị. IUI từ 15 triệu, IVF từ 85 triệu. Chúng tôi có các gói ưu đãi và hỗ trợ tài chính."
-                },
-                new {
-                    question = "Thời gian điều trị hiếm muộn mất bao lâu?",
-                    answer = "IUI thường mất 2 tuần, IVF khoảng 4-6 tuần. Tuy nhiên có thể cần nhiều chu kỳ điều trị để đạt kết quả tốt nhất."
-                },
-                new {
-                    question = "Có cần nghỉ ngơi lâu sau điều trị không?",
-                    answer = "Sau IUI có thể hoạt động bình thường ngay. Sau IVF nên nghỉ ngơi 1-2 ngày và tránh hoạt động nặng trong 1 tuần."
-                }
-            };
+                var faqs = new List<object>
+                {
+                    new {
+                        question = "Trung tâm có những phương pháp điều trị nào?",
+                        answer = "Chúng tôi cung cấp nhiều phương pháp điều trị hiếm muộn hiện đại như IUI, IVF, ICSI, và các liệu pháp hormone."
+                    },
+                    new {
+                        question = "Chi phí điều trị như thế nào?",
+                        answer = "Chi phí sẽ phụ thuộc vào phương pháp điều trị cụ thể. Vui lòng liên hệ để được tư vấn chi tiết."
+                    },
+                    new {
+                        question = "Làm thế nào để đặt lịch khám?",
+                        answer = "Bạn có thể đặt lịch trực tuyến thông qua website hoặc gọi điện trực tiếp đến số hotline của trung tâm."
+                    },
+                    new {
+                        question = "Tỷ lệ thành công của các phương pháp điều trị?",
+                        answer = "Tỷ lệ thành công phụ thuộc vào nhiều yếu tố như tuổi tác, tình trạng sức khỏe. Trung bình đạt 60-70%."
+                    },
+                    new {
+                        question = "Thời gian điều trị kéo dài bao lâu?",
+                        answer = "Mỗi phương pháp có thời gian điều trị khác nhau, từ vài tuần đến vài tháng tùy trường hợp cụ thể."
+                    }
+                };
 
-            return Ok(new { 
-                success = true,
-                data = faqs,
-                message = "Lấy FAQ thành công"
-            });
+                return Ok(new { 
+                    success = true,
+                    data = faqs,
+                    message = "Lấy danh sách FAQ thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = $"Lỗi hệ thống: {ex.Message}" 
+                });
+            }
         }
     }
 } 

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SWP391_ITMMS_Api.Models;
 using SWP391_ITMMS_Api.Services;
@@ -6,6 +7,7 @@ namespace SWP391_ITMMS_Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
@@ -15,150 +17,92 @@ namespace SWP391_ITMMS_Api.Controllers
             _appointmentService = appointmentService;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointments()
+        {
+            var appointments = await _appointmentService.GetAppointmentsAsync();
+            return Ok(appointments);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Appointment>> GetAppointment(int id)
+        {
+            var appointment = await _appointmentService.GetAppointmentByIdAsync(id);
+            if (appointment == null)
+            {
+                return NotFound(new { message = "Appointment not found" });
+            }
+            return Ok(appointment);
+        }
+
+        [HttpGet("doctor/{doctorId}")]
+        public async Task<ActionResult<IEnumerable<Appointment>>> GetDoctorAppointments(int doctorId)
+        {
+            var appointments = await _appointmentService.GetDoctorAppointmentsAsync(doctorId);
+            return Ok(appointments);
+        }
+
         [HttpPost]
-        public async Task<IActionResult> CreateAppointment([FromQuery] int customerId, [FromBody] CreateAppointmentDto appointmentDto)
+        public async Task<ActionResult<Appointment>> CreateAppointment(Appointment appointment)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new { message = "Dữ liệu không hợp lệ", errors = ModelState });
-                }
-
-                var appointment = await _appointmentService.CreateAppointmentAsync(customerId, appointmentDto);
-                
-                return Ok(new 
-                { 
-                    message = "Đặt lịch hẹn thành công", 
-                    appointment = new 
-                    {
-                        appointment.Id,
-                        appointment.AppointmentDate,
-                        appointment.TimeSlot,
-                        appointment.Type,
-                        appointment.Status,
-                        appointment.Notes
-                    }
-                });
+                var createdAppointment = await _appointmentService.CreateAppointmentAsync(appointment);
+                return CreatedAtAction(
+                    nameof(GetAppointment),
+                    new { id = createdAppointment.Id },
+                    createdAppointment
+                );
             }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
-            }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetAppointment(int id)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAppointment(int id, Appointment appointment)
         {
+            if (id != appointment.Id)
+            {
+                return BadRequest(new { message = "ID mismatch" });
+            }
+
             try
             {
-                var appointment = await _appointmentService.GetAppointmentByIdAsync(id);
-                if (appointment == null)
+                var success = await _appointmentService.UpdateAppointmentAsync(appointment);
+                if (!success)
                 {
-                    return NotFound(new { message = "Không tìm thấy lịch hẹn" });
+                    return NotFound(new { message = "Appointment not found" });
                 }
-
-                return Ok(new { appointment });
+                return NoContent();
             }
-            catch (Exception)
+            catch (InvalidOperationException ex)
             {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
-            }
-        }
-
-        [HttpGet("customer/{customerId}")]
-        public async Task<IActionResult> GetAppointmentsByCustomer(int customerId)
-        {
-            try
-            {
-                var appointments = await _appointmentService.GetAppointmentsByCustomerAsync(customerId);
-                return Ok(new { appointments });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
-            }
-        }
-
-        [HttpGet("doctor/{doctorId}")]
-        public async Task<IActionResult> GetAppointmentsByDoctor(int doctorId)
-        {
-            try
-            {
-                var appointments = await _appointmentService.GetAppointmentsByDoctorAsync(doctorId);
-                return Ok(new { appointments });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
-            }
-        }
-
-        [HttpGet("available-slots")]
-        public async Task<IActionResult> GetAvailableTimeSlots([FromQuery] int doctorId, [FromQuery] DateTime date)
-        {
-            try
-            {
-                var availableSlots = await _appointmentService.GetAvailableTimeSlotsAsync(doctorId, date);
-                return Ok(new { availableSlots });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
-            }
-        }
-
-        [HttpPut("{id}/status")]
-        public async Task<IActionResult> UpdateAppointmentStatus(int id, [FromBody] UpdateStatusDto statusDto)
-        {
-            try
-            {
-                var result = await _appointmentService.UpdateAppointmentStatusAsync(id, statusDto.Status);
-                if (!result)
-                {
-                    return NotFound(new { message = "Không tìm thấy lịch hẹn" });
-                }
-
-                return Ok(new { message = "Cập nhật trạng thái thành công" });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
+                return BadRequest(new { message = ex.Message });
             }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelAppointment(int id)
         {
-            try
+            var success = await _appointmentService.CancelAppointmentAsync(id);
+            if (!success)
             {
-                var result = await _appointmentService.CancelAppointmentAsync(id);
-                if (!result)
-                {
-                    return NotFound(new { message = "Không tìm thấy lịch hẹn" });
-                }
-
-                return Ok(new { message = "Hủy lịch hẹn thành công" });
+                return NotFound(new { message = "Appointment not found" });
             }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
-            }
+            return NoContent();
         }
-    }
 
-    public class UpdateStatusDto
-    {
-        public string Status { get; set; } = string.Empty;
-    }
-
-    public class RescheduleDto
-    {
-        public DateTime NewDate { get; set; }
-        public string NewTimeSlot { get; set; } = string.Empty;
+        [HttpPut("{id}/complete")]
+        public async Task<IActionResult> CompleteAppointment(int id)
+        {
+            var success = await _appointmentService.CompleteAppointmentAsync(id);
+            if (!success)
+            {
+                return NotFound(new { message = "Appointment not found" });
+            }
+            return NoContent();
+        }
     }
 } 

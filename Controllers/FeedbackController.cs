@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SWP391_ITMMS_Api.Models;
 using SWP391_ITMMS_Api.Data;
-using System.Collections.Generic;
-using System.Linq;
-using System;
+using SWP391_ITMMS_Api.Models;
 
 namespace SWP391_ITMMS_Api.Controllers
 {
@@ -13,83 +10,227 @@ namespace SWP391_ITMMS_Api.Controllers
     public class FeedbackController : ControllerBase
     {
         private readonly AppDbContext _context;
+
         public FeedbackController(AppDbContext context)
         {
             _context = context;
         }
 
-        // Lấy danh sách feedback
+        /// <summary>
+        /// Lấy danh sách feedback (Admin/Manager only)
+        /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Feedback>>> GetFeedbacks()
+        public async Task<IActionResult> GetFeedbacks()
         {
-            var feedbacks = await _context.Feedbacks
-                .Include(f => f.Customer)
-                    .ThenInclude(c => c.User)
-                .Include(f => f.Doctor)
-                    .ThenInclude(d => d.User)
-                .Include(f => f.Appointment)
-                .OrderByDescending(f => f.CreatedAt)
-                .ToListAsync();
-
-            return Ok(new { 
-                success = true,
-                data = feedbacks.Select(f => new {
-                    f.Id,
-                    f.Rating,
-                    f.Comment,
-                    f.CreatedAt,
-                    CustomerName = f.Customer.User.FullName,
-                    DoctorName = f.Doctor.User.FullName,
-                    AppointmentDate = f.Appointment != null ? f.Appointment.AppointmentDate.ToString("dd/MM/yyyy") : null
-                }),
-                message = "Lấy danh sách đánh giá thành công"
-            });
-        }
-
-        // Thêm feedback mới
-        [HttpPost]
-        public async Task<ActionResult<Feedback>> AddFeedback([FromBody] CreateFeedbackDto dto)
-        {
-            var feedback = new Feedback
+            try
             {
-                CustomerId = dto.DoctorId, // Assuming this is actually the customer ID
-                DoctorId = dto.DoctorId,
-                AppointmentId = dto.AppointmentId,
-                Rating = dto.Rating,
-                Comment = dto.Comment ?? "",
-                CreatedAt = DateTime.UtcNow
-            };
+                var feedbacks = await _context.Feedbacks
+                    .Include(f => f.Customer).ThenInclude(c => c.User)
+                    .Include(f => f.Doctor).ThenInclude(d => d.User)
+                    .OrderByDescending(f => f.CreatedAt)
+                    .Select(f => new
+                    {
+                        f.Id,
+                        f.Rating,
+                        f.Comment,
+                        f.CreatedAt,
+                        CustomerName = f.Customer.User.FirstName + " " + f.Customer.User.LastName,
+                        DoctorName = f.Doctor.User.FirstName + " " + f.Doctor.User.LastName,
+                        f.Status
+                    })
+                    .ToListAsync();
 
-            _context.Feedbacks.Add(feedback);
-            await _context.SaveChangesAsync();
-
-            return Ok(new {
-                success = true,
-                data = feedback,
-                message = "Thêm đánh giá thành công"
-            });
+                return Ok(new
+                {
+                    success = true,
+                    data = feedbacks,
+                    message = "Lấy danh sách feedback thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Lỗi hệ thống: {ex.Message}"
+                });
+            }
         }
 
-        // Xóa feedback
+        /// <summary>
+        /// Lấy chi tiết feedback
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetFeedback(int id)
+        {
+            try
+            {
+                var feedback = await _context.Feedbacks
+                    .Include(f => f.Customer).ThenInclude(c => c.User)
+                    .Include(f => f.Doctor).ThenInclude(d => d.User)
+                    .Where(f => f.Id == id)
+                    .Select(f => new
+                    {
+                        f.Id,
+                        f.Rating,
+                        f.Comment,
+                        f.CreatedAt,
+                        CustomerName = f.Customer.User.FirstName + " " + f.Customer.User.LastName,
+                        DoctorName = f.Doctor.User.FirstName + " " + f.Doctor.User.LastName,
+                        f.Status
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (feedback == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy feedback"
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    data = feedback,
+                    message = "Lấy chi tiết feedback thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Lỗi hệ thống: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Tạo feedback mới
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> CreateFeedback([FromBody] FeedbackDto dto)
+        {
+            try
+            {
+                var feedback = new Feedback
+                {
+                    CustomerId = dto.CustomerId,
+                    DoctorId = dto.DoctorId,
+                    Rating = dto.Rating,
+                    Comment = dto.Comment,
+                    Status = "Active",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Feedbacks.Add(feedback);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = feedback,
+                    message = "Tạo feedback thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Lỗi hệ thống: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật feedback
+        /// </summary>
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateFeedback(int id, [FromBody] FeedbackDto dto)
+        {
+            try
+            {
+                var feedback = await _context.Feedbacks.FindAsync(id);
+                if (feedback == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy feedback"
+                    });
+                }
+
+                feedback.Rating = dto.Rating;
+                feedback.Comment = dto.Comment;
+                feedback.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = feedback,
+                    message = "Cập nhật feedback thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Lỗi hệ thống: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Xóa feedback
+        /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFeedback(int id)
         {
-            var feedback = await _context.Feedbacks.FindAsync(id);
-            if (feedback == null)
+            try
             {
-                return NotFound(new {
-                    success = false,
-                    message = "Không tìm thấy đánh giá"
+                var feedback = await _context.Feedbacks.FindAsync(id);
+                if (feedback == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Không tìm thấy feedback"
+                    });
+                }
+
+                feedback.Status = "Deleted";
+                feedback.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Xóa feedback thành công"
                 });
             }
-
-            _context.Feedbacks.Remove(feedback);
-            await _context.SaveChangesAsync();
-
-            return Ok(new {
-                success = true,
-                message = "Xóa đánh giá thành công"
-            });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Lỗi hệ thống: {ex.Message}"
+                });
+            }
         }
+    }
+
+    public class FeedbackDto
+    {
+        public int CustomerId { get; set; }
+        public int DoctorId { get; set; }
+        public int Rating { get; set; }
+        public string Comment { get; set; } = string.Empty;
     }
 } 

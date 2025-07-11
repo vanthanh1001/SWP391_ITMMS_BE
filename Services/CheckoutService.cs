@@ -4,138 +4,71 @@ using SWP391_ITMMS_Api.Models;
 
 namespace SWP391_ITMMS_Api.Services
 {
-    public class MedicalRecordService : IMedicalRecordService
+    public class CheckoutService : ICheckoutService
     {
         private readonly AppDbContext _context;
 
-        public MedicalRecordService(AppDbContext context)
+        public CheckoutService(AppDbContext context)
         {
             _context = context;
         }
 
-        public async Task<MedicalRecordResponseDto> CompleteAppointment(int doctorId, DoctorCompleteAppointmentDto dto)
+        public async Task<TreatmentPlan?> GetTreatmentPlanAsync(int id)
         {
-            var appointment = await _context.Appointments
-                .Include(a => a.Customer)
-                .Include(a => a.Doctor)
-                .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId && a.DoctorId == doctorId);
+            return await _context.TreatmentPlans
+                .Include(tp => tp.Customer)
+                .Include(tp => tp.TreatmentService)
+                .FirstOrDefaultAsync(tp => tp.Id == id);
+        }
 
-            if (appointment == null)
-            {
-                return new MedicalRecordResponseDto
-                {
-                    Success = false,
-                    Message = "Không tìm thấy cuộc hẹn hoặc bạn không có quyền truy cập"
-                };
-            }
+        public async Task<IEnumerable<TreatmentPlan>> GetCustomerTreatmentPlansAsync(int customerId)
+        {
+            return await _context.TreatmentPlans
+                .Include(tp => tp.TreatmentService)
+                .Where(tp => tp.CustomerId == customerId)
+                .OrderByDescending(tp => tp.CreatedAt)
+                .ToListAsync();
+        }
 
-            if (appointment.Status != "Scheduled")
-            {
-                return new MedicalRecordResponseDto
-                {
-                    Success = false,
-                    Message = "Cuộc hẹn không ở trạng thái có thể hoàn thành"
-                };
-            }
-
-            // Kiểm tra xem đã có medical record chưa
-            var existingRecord = await _context.MedicalRecords
-                .FirstOrDefaultAsync(mr => mr.AppointmentId == dto.AppointmentId);
-
-            if (existingRecord != null)
-            {
-                return new MedicalRecordResponseDto
-                {
-                    Success = false,
-                    Message = "Cuộc hẹn này đã có hồ sơ bệnh án"
-                };
-            }
-
-            // Tạo medical record
-            var medicalRecord = new MedicalRecord
-            {
-                CustomerId = appointment.CustomerId,
-                DoctorId = appointment.DoctorId,
-                AppointmentId = appointment.Id,
-                Symptoms = dto.Symptoms,
-                Diagnosis = dto.Diagnosis,
-                Treatment = dto.Treatment,
-                Prescription = dto.Prescription,
-                RecordDate = DateTime.Now
-            };
-
-            _context.MedicalRecords.Add(medicalRecord);
-
-            // Cập nhật appointment status
-            appointment.Status = "Completed";
-            appointment.CompletedAt = DateTime.Now;
-            appointment.Notes = dto.Notes;
-
-            // Nếu cần follow up, ghi chú
-            if (dto.FollowUpRequired && dto.NextAppointmentDate.HasValue)
-            {
-                appointment.Notes += $"\n[Follow-up required: {dto.NextAppointmentDate:dd/MM/yyyy}]";
-            }
-
+        public async Task<TreatmentPlan> CreateTreatmentPlanAsync(TreatmentPlan plan)
+        {
+            _context.TreatmentPlans.Add(plan);
             await _context.SaveChangesAsync();
-
-            return new MedicalRecordResponseDto
-            {
-                Success = true,
-                Message = "Hoàn thành cuộc hẹn và ghi nhận hồ sơ bệnh án thành công",
-                Data = new { 
-                    MedicalRecordId = medicalRecord.Id,
-                    AppointmentId = appointment.Id,
-                    CompletedAt = appointment.CompletedAt,
-                    Diagnosis = medicalRecord.Diagnosis,
-                    Treatment = medicalRecord.Treatment
-                }
-            };
+            return plan;
         }
 
-        public async Task<MedicalRecord?> GetMedicalRecordByAppointmentId(int appointmentId)
+        public async Task<bool> UpdateTreatmentPlanAsync(TreatmentPlan plan)
         {
-            return await _context.MedicalRecords
-                .Include(mr => mr.Doctor)
-                    .ThenInclude(d => d.User)
-                .Include(mr => mr.Customer)
-                    .ThenInclude(c => c.User)
-                .FirstOrDefaultAsync(mr => mr.AppointmentId == appointmentId);
+            var existingPlan = await GetTreatmentPlanAsync(plan.Id);
+            if (existingPlan == null)
+                return false;
+
+            _context.Entry(existingPlan).CurrentValues.SetValues(plan);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task<List<PatientMedicalHistoryDto>> GetPatientMedicalHistory(int customerId)
+        public async Task<bool> DeleteTreatmentPlanAsync(int id)
         {
-            var records = await _context.MedicalRecords
-                .Include(mr => mr.Doctor)
-                    .ThenInclude(d => d.User)
-                .Include(mr => mr.Appointment)
-                .Where(mr => mr.CustomerId == customerId)
-                .OrderByDescending(mr => mr.RecordDate)
-                .Select(mr => new PatientMedicalHistoryDto
-                {
-                    Id = mr.Id,
-                    RecordDate = mr.RecordDate,
-                    DoctorName = mr.Doctor != null && mr.Doctor.User != null ? mr.Doctor.User.FullName : "Unknown",
-                    Symptoms = mr.Symptoms ?? "",
-                    Diagnosis = mr.Diagnosis ?? "",
-                    Treatment = mr.Treatment ?? "",
-                    Prescription = mr.Prescription ?? "",
-                    AppointmentType = mr.Appointment != null ? mr.Appointment.Type : "Unknown"
-                })
-                .ToListAsync();
+            var plan = await GetTreatmentPlanAsync(id);
+            if (plan == null)
+                return false;
 
-            return records;
+            _context.TreatmentPlans.Remove(plan);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task<List<MedicalRecord>> GetMedicalRecordsByDoctorId(int doctorId)
+        public async Task<bool> UpdatePaymentStatusAsync(int planId, string status)
         {
-            return await _context.MedicalRecords
-                .Include(mr => mr.Customer)
-                    .ThenInclude(c => c.User)
-                .Include(mr => mr.Appointment)
-                .Where(mr => mr.DoctorId == doctorId)
-                .OrderByDescending(mr => mr.RecordDate)
-                .ToListAsync();
+            var plan = await GetTreatmentPlanAsync(planId);
+            if (plan == null)
+                return false;
+
+            plan.Status = status;
+            plan.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 } 

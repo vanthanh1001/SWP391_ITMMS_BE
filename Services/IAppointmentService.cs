@@ -4,15 +4,12 @@ namespace SWP391_ITMMS_Api.Services
 {
     public interface IAppointmentService
     {
-        Task<Appointment> CreateAppointmentAsync(int customerId, CreateAppointmentDto appointmentDto);
+        Task<IEnumerable<Appointment>> GetAppointmentsAsync();
+        Task<IEnumerable<Appointment>> GetDoctorAppointmentsAsync(int doctorId);
+        Task<Appointment> CreateAppointmentAsync(Appointment appointment);
         Task<Appointment?> GetAppointmentByIdAsync(int id);
-        Task<IEnumerable<Appointment>> GetAppointmentsByCustomerAsync(int customerId);
-        Task<IEnumerable<Appointment>> GetAppointmentsByDoctorAsync(int doctorId);
-        Task<IEnumerable<Appointment>> GetAppointmentsByDateAsync(DateTime date);
-        Task<bool> UpdateAppointmentStatusAsync(int id, string status);
+        Task<bool> UpdateAppointmentAsync(Appointment appointment);
         Task<bool> CancelAppointmentAsync(int id);
-        Task<bool> RescheduleAppointmentAsync(int id, DateTime newDate, string newTimeSlot);
-        Task<IEnumerable<string>> GetAvailableTimeSlotsAsync(int doctorId, DateTime date);
-        Task<bool> IsTimeSlotAvailableAsync(int doctorId, DateTime date, string timeSlot);
+        Task<bool> CompleteAppointmentAsync(int id);
     }
 } 

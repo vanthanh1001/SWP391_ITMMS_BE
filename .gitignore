@@ -57,3 +57,4 @@ msbuild.wrn
 serviceAccountKey.json
 # Firebase credentials
 **/serviceAccountKey.json
+echo appsettings.json >> .gitignore

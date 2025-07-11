@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SWP391_ITMMS_Api.Models;
 using SWP391_ITMMS_Api.Services;
@@ -6,116 +7,84 @@ namespace SWP391_ITMMS_Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class MedicalRecordsController : ControllerBase
+    public class CheckoutController : ControllerBase
     {
-        private readonly IMedicalRecordService _medicalRecordService;
+        private readonly ICheckoutService _checkoutService;
 
-        public MedicalRecordsController(IMedicalRecordService medicalRecordService)
+        public CheckoutController(ICheckoutService checkoutService)
         {
-            _medicalRecordService = medicalRecordService;
+            _checkoutService = checkoutService;
         }
 
-        /// <summary>
-        /// Bác sĩ hoàn thành cuộc hẹn và tạo hồ sơ bệnh án
-        /// </summary>
-        [HttpPost("complete/{doctorId}")]
-        public async Task<ActionResult<MedicalRecordResponseDto>> CompleteAppointment(int doctorId, [FromBody] DoctorCompleteAppointmentDto dto)
+        [HttpGet("plans/{id}")]
+        public async Task<ActionResult<TreatmentPlan>> GetTreatmentPlan(int id)
         {
-            try
+            var plan = await _checkoutService.GetTreatmentPlanAsync(id);
+            if (plan == null)
             {
-                var result = await _medicalRecordService.CompleteAppointment(doctorId, dto);
-                
-                if (result.Success)
-                {
-                    return Ok(result);
-                }
-                
-                return BadRequest(result);
+                return NotFound(new { message = "Treatment plan not found" });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new MedicalRecordResponseDto
-                {
-                    Success = false,
-                    Message = $"Lỗi hệ thống: {ex.Message}"
-                });
-            }
+            return Ok(plan);
         }
 
-        /// <summary>
-        /// Lấy hồ sơ bệnh án của một cuộc hẹn
-        /// </summary>
-        [HttpGet("appointment/{appointmentId}")]
-        public async Task<ActionResult<MedicalRecord>> GetMedicalRecordByAppointment(int appointmentId)
+        [HttpGet("customer/{customerId}/plans")]
+        public async Task<ActionResult<IEnumerable<TreatmentPlan>>> GetCustomerTreatmentPlans(int customerId)
         {
-            try
-            {
-                var record = await _medicalRecordService.GetMedicalRecordByAppointmentId(appointmentId);
-                
-                if (record == null)
-                {
-                    return NotFound(new { message = "Không tìm thấy hồ sơ bệnh án" });
-                }
-                
-                return Ok(record);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = $"Lỗi hệ thống: {ex.Message}" });
-            }
+            var plans = await _checkoutService.GetCustomerTreatmentPlansAsync(customerId);
+            return Ok(plans);
         }
 
-        /// <summary>
-        /// Lấy lịch sử khám bệnh của bệnh nhân
-        /// </summary>
-        [HttpGet("patient/{customerId}/history")]
-        public async Task<ActionResult<List<PatientMedicalHistoryDto>>> GetPatientHistory(int customerId)
+        [HttpPost("plans")]
+        public async Task<ActionResult<TreatmentPlan>> CreateTreatmentPlan(TreatmentPlan plan)
         {
-            try
-            {
-                var history = await _medicalRecordService.GetPatientMedicalHistory(customerId);
-                return Ok(history);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = $"Lỗi hệ thống: {ex.Message}" });
-            }
+            var createdPlan = await _checkoutService.CreateTreatmentPlanAsync(plan);
+            return CreatedAtAction(nameof(GetTreatmentPlan), new { id = createdPlan.Id }, createdPlan);
         }
 
-        /// <summary>
-        /// Lấy danh sách hồ sơ bệnh án của bác sĩ
-        /// </summary>
-        [HttpGet("doctor/{doctorId}")]
-        public async Task<ActionResult<List<MedicalRecord>>> GetDoctorMedicalRecords(int doctorId)
+        [HttpPut("plans/{id}")]
+        public async Task<IActionResult> UpdateTreatmentPlan(int id, TreatmentPlan plan)
         {
-            try
+            if (id != plan.Id)
             {
-                var records = await _medicalRecordService.GetMedicalRecordsByDoctorId(doctorId);
-                return Ok(records);
+                return BadRequest(new { message = "ID mismatch" });
             }
-            catch (Exception ex)
+
+            var success = await _checkoutService.UpdateTreatmentPlanAsync(plan);
+            if (!success)
             {
-                return StatusCode(500, new { message = $"Lỗi hệ thống: {ex.Message}" });
+                return NotFound(new { message = "Treatment plan not found" });
             }
+
+            return NoContent();
         }
 
-        /// <summary>
-        /// Test endpoint để kiểm tra trạng thái Medical Records API
-        /// </summary>
-        [HttpGet("test")]
-        public IActionResult Test()
+        [HttpDelete("plans/{id}")]
+        public async Task<IActionResult> DeleteTreatmentPlan(int id)
         {
-            return Ok(new { 
-                message = "Medical Records API hoạt động bình thường",
-                timestamp = DateTime.Now,
-                endpoints = new[]
-                {
-                    "POST /api/medicalrecords/complete/{doctorId} - Doctor hoàn thành cuộc hẹn",
-                    "GET /api/medicalrecords/appointment/{appointmentId} - Xem hồ sơ bệnh án",
-                    "GET /api/medicalrecords/patient/{customerId}/history - Lịch sử khám bệnh",
-                    "GET /api/medicalrecords/doctor/{doctorId} - Danh sách hồ sơ của bác sĩ"
-                }
-            });
+            var success = await _checkoutService.DeleteTreatmentPlanAsync(id);
+            if (!success)
+            {
+                return NotFound(new { message = "Treatment plan not found" });
+            }
+
+            return NoContent();
         }
+
+        [HttpPut("plans/{id}/status")]
+        public async Task<IActionResult> UpdatePaymentStatus(int id, [FromBody] UpdateStatusRequest request)
+        {
+            var success = await _checkoutService.UpdatePaymentStatusAsync(id, request.Status);
+            if (!success)
+            {
+                return NotFound(new { message = "Treatment plan not found" });
+            }
+
+            return NoContent();
+        }
+    }
+
+    public class UpdateStatusRequest
+    {
+        public string Status { get; set; } = string.Empty;
     }
 } 
