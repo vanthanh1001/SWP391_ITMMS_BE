@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SWP391_ITMMS_Api.Data;
 
@@ -11,9 +12,11 @@ using SWP391_ITMMS_Api.Data;
 namespace SWP391_ITMMS_Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250716141903_FixShadowPropertiesRelationships")]
+    partial class FixShadowPropertiesRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +71,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("Appointments", (string)null);
+                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.BlogPost", b =>
@@ -123,7 +126,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("BlogPosts", (string)null);
+                    b.ToTable("BlogPosts");
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.Category", b =>
@@ -154,7 +157,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.Customer", b =>
@@ -202,7 +205,7 @@ namespace SWP391_ITMMS_Api.Migrations
                         .IsUnique()
                         .HasFilter("[UserId1] IS NOT NULL");
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.Doctor", b =>
@@ -261,7 +264,7 @@ namespace SWP391_ITMMS_Api.Migrations
                         .IsUnique()
                         .HasFilter("[UserId1] IS NOT NULL");
 
-                    b.ToTable("Doctors", (string)null);
+                    b.ToTable("Doctors");
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.Feedback", b =>
@@ -307,7 +310,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("Feedbacks", (string)null);
+                    b.ToTable("Feedbacks");
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.TreatmentPlan", b =>
@@ -354,7 +357,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("TreatmentPlans", (string)null);
+                    b.ToTable("TreatmentPlans");
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.TreatmentService", b =>
@@ -397,7 +400,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("TreatmentServices", (string)null);
+                    b.ToTable("TreatmentServices");
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.User", b =>
@@ -455,7 +458,7 @@ namespace SWP391_ITMMS_Api.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.Appointment", b =>
@@ -527,13 +530,13 @@ namespace SWP391_ITMMS_Api.Migrations
                     b.HasOne("SWP391_ITMMS_Api.Models.Customer", "Customer")
                         .WithMany("GivenFeedbacks")
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SWP391_ITMMS_Api.Models.Doctor", "Doctor")
                         .WithMany("ReceivedFeedbacks")
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Appointment");
@@ -548,7 +551,7 @@ namespace SWP391_ITMMS_Api.Migrations
                     b.HasOne("SWP391_ITMMS_Api.Models.Customer", "Customer")
                         .WithMany("TreatmentPlans")
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SWP391_ITMMS_Api.Models.TreatmentService", "TreatmentService")
