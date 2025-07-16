@@ -545,7 +545,7 @@ namespace SWP391_ITMMS_Api.Migrations
                 column: "CustomerId",
                 principalTable: "Customers",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Feedbacks_Doctors_DoctorId",
@@ -553,7 +553,7 @@ namespace SWP391_ITMMS_Api.Migrations
                 column: "DoctorId",
                 principalTable: "Doctors",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_TreatmentPlans_Customers_CustomerId",
@@ -561,7 +561,7 @@ namespace SWP391_ITMMS_Api.Migrations
                 column: "CustomerId",
                 principalTable: "Customers",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_TreatmentPlans_TreatmentServices_ServiceId",
@@ -1029,7 +1029,7 @@ namespace SWP391_ITMMS_Api.Migrations
                         column: x => x.AppointmentId,
                         principalTable: "Appointments",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_MedicalRecords_Customers_CustomerId",
                         column: x => x.CustomerId,
@@ -1128,7 +1128,7 @@ namespace SWP391_ITMMS_Api.Migrations
                         column: x => x.MedicalRecordId,
                         principalTable: "MedicalRecords",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.InsertData(
