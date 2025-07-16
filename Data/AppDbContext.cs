@@ -6,7 +6,7 @@ namespace SWP391_ITMMS_Api.Data
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
+        
         public DbSet<User> Users { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<Customer> Customers { get; set; }
@@ -35,8 +35,8 @@ namespace SWP391_ITMMS_Api.Data
             {
                 entity.HasOne(d => d.User)
                     .WithOne()
-                    .HasForeignKey<Doctor>(d => d.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey<Doctor>(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Customer configuration
@@ -44,8 +44,8 @@ namespace SWP391_ITMMS_Api.Data
             {
                 entity.HasOne(c => c.User)
                     .WithOne()
-                    .HasForeignKey<Customer>(c => c.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey<Customer>(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             });
 
             // TreatmentService configuration
@@ -62,13 +62,13 @@ namespace SWP391_ITMMS_Api.Data
             {
                 entity.HasOne(tp => tp.Customer)
                     .WithMany()
-                    .HasForeignKey(tp => tp.CustomerId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(tp => tp.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(tp => tp.TreatmentService)
                     .WithMany(ts => ts.TreatmentPlans)
                     .HasForeignKey(tp => tp.ServiceId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict);
             });
 
             // BlogPost configuration
@@ -77,20 +77,20 @@ namespace SWP391_ITMMS_Api.Data
                 entity.HasOne(b => b.Author)
                     .WithMany()
                     .HasForeignKey(b => b.AuthorId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Feedback configuration
             modelBuilder.Entity<Feedback>(entity =>
             {
                 entity.HasOne(f => f.Customer)
-                    .WithMany(c => c.GivenFeedbacks)
-                    .HasForeignKey(f => f.CustomerId)
+                .WithMany(c => c.GivenFeedbacks)
+                .HasForeignKey(f => f.CustomerId)
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(f => f.Doctor)
-                    .WithMany(d => d.ReceivedFeedbacks)
-                    .HasForeignKey(f => f.DoctorId)
+                .WithMany(d => d.ReceivedFeedbacks)
+                .HasForeignKey(f => f.DoctorId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -100,12 +100,12 @@ namespace SWP391_ITMMS_Api.Data
                 entity.HasOne(a => a.Customer)
                     .WithMany()
                     .HasForeignKey(a => a.CustomerId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(a => a.Doctor)
                     .WithMany()
                     .HasForeignKey(a => a.DoctorId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

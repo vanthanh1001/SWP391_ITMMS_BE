@@ -7,11 +7,22 @@ namespace SWP391_ITMMS_Api.Controllers
     [Route("api/[controller]")]
     public class FileUploadController : ControllerBase
     {
-        private readonly FirebaseService _firebaseService;
+        private readonly PublitioService _publitioService;
 
-        public FileUploadController(FirebaseService firebaseService)
+        public FileUploadController(PublitioService publitioService)
         {
-            _firebaseService = firebaseService;
+            _publitioService = publitioService;
+        }
+
+        [HttpGet("health")]
+        public IActionResult HealthCheck()
+        {
+            return Ok(new { 
+                status = "healthy", 
+                message = "FileUpload API is working!", 
+                timestamp = DateTime.UtcNow,
+                publitioConfigured = _publitioService != null
+            });
         }
 
         [HttpPost]
@@ -19,36 +30,64 @@ namespace SWP391_ITMMS_Api.Controllers
         {
             if (file == null || file.Length == 0)
             {
-                return BadRequest("No file uploaded");
+                return BadRequest(new { 
+                    success = false,
+                    message = "No file uploaded" 
+                });
             }
 
             try
             {
-                var fileUrl = await _firebaseService.UploadFileAsync(file);
-                return Ok(new { fileUrl });
+                var fileUrl = await _publitioService.UploadFileAsync(file);
+                return Ok(new { 
+                    success = true,
+                    message = "File uploaded successfully!",
+                    fileUrl = fileUrl,
+                    fileName = file.FileName,
+                    fileSize = file.Length,
+                    contentType = file.ContentType,
+                    timestamp = DateTime.UtcNow
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new {
+                    success = false,
+                    message = "Upload failed",
+                    error = ex.Message,
+                    timestamp = DateTime.UtcNow
+                });
             }
         }
 
-        [HttpDelete("{fileName}")]
-        public async Task<IActionResult> Delete(string fileName)
+        [HttpDelete("{fileId}")]
+        public async Task<IActionResult> Delete(string fileId)
         {
-            if (string.IsNullOrEmpty(fileName))
+            if (string.IsNullOrEmpty(fileId))
             {
-                return BadRequest("Filename is required");
+                return BadRequest(new { 
+                    success = false,
+                    message = "File ID is required" 
+                });
             }
 
             try
             {
-                await _firebaseService.DeleteFileAsync(fileName);
-                return Ok();
+                await _publitioService.DeleteFileAsync(fileId);
+                return Ok(new { 
+                    success = true,
+                    message = "File deleted successfully",
+                    timestamp = DateTime.UtcNow
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new {
+                    success = false,
+                    message = "Delete failed",
+                    error = ex.Message,
+                    timestamp = DateTime.UtcNow
+                });
             }
         }
     }

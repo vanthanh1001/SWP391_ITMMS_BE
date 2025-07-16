@@ -54,7 +54,7 @@ namespace SWP391_ITMMS_Api.Controllers
                     a.Status,
                     a.Type
                 })
-                .ToListAsync();
+                    .ToListAsync();
 
             return Ok(new
             {
@@ -73,7 +73,7 @@ namespace SWP391_ITMMS_Api.Controllers
         public async Task<ActionResult<object>> GetDoctorStats(int doctorId)
         {
             var doctor = await _context.Doctors
-                .Include(d => d.User)
+                    .Include(d => d.User)
                 .FirstOrDefaultAsync(d => d.Id == doctorId);
 
             if (doctor == null)
@@ -97,21 +97,21 @@ namespace SWP391_ITMMS_Api.Controllers
                 .Where(f => f.DoctorId == doctorId)
                 .AverageAsync(f => (double?)f.Rating) ?? 0;
 
-            var recentAppointments = await _context.Appointments
+                var recentAppointments = await _context.Appointments
                 .Include(a => a.Customer)
                     .ThenInclude(c => c.User)
                 .Where(a => a.DoctorId == doctorId)
-                .OrderByDescending(a => a.AppointmentDate)
+                    .OrderByDescending(a => a.AppointmentDate)
                 .Take(5)
                 .Select(a => new
                 {
-                    a.Id,
+                        a.Id,
                     CustomerName = $"{a.Customer.User.FirstName} {a.Customer.User.LastName}",
-                    a.AppointmentDate,
-                    a.Status,
+                        a.AppointmentDate,
+                        a.Status,
                     a.Type
-                })
-                .ToListAsync();
+                    })
+                    .ToListAsync();
 
             return Ok(new
             {
