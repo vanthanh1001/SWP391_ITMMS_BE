@@ -117,7 +117,47 @@ namespace SWP391_ITMMS_Api.Controllers
                     return ForbiddenResponse("Bạn không có quyền xem lịch hẹn này");
                 }
 
-                return SuccessResponse(new { appointment }, "Lấy thông tin lịch hẹn thành công");
+                // Format response với tên đầy đủ
+                var response = new
+                {
+                    appointment.Id,
+                    appointment.AppointmentDate,
+                    appointment.TimeSlot,
+                    appointment.Type,
+                    appointment.Status,
+                    appointment.Notes,
+                    appointment.CompletedAt,
+                    Doctor = new
+                    {
+                        appointment.Doctor.Id,
+                        Name = appointment.Doctor.User.FullName,
+                        appointment.Doctor.Specialization,
+                        appointment.Doctor.ConsultationFee,
+                        Phone = appointment.Doctor.User.Phone,
+                        Email = appointment.Doctor.User.Email
+                    },
+                    Customer = new
+                    {
+                        appointment.Customer.Id,
+                        Name = appointment.Customer.User.FullName,
+                        Phone = appointment.Customer.User.Phone,
+                        Email = appointment.Customer.User.Email
+                    },
+                    TreatmentPlan = appointment.TreatmentPlan != null ? new
+                    {
+                        appointment.TreatmentPlan.Id,
+                        appointment.TreatmentPlan.TreatmentType,
+                        appointment.TreatmentPlan.Description
+                    } : null,
+                    MedicalRecord = appointment.MedicalRecord != null ? new
+                    {
+                        appointment.MedicalRecord.Id,
+                        appointment.MedicalRecord.Diagnosis,
+                        appointment.MedicalRecord.Treatment
+                    } : null
+                };
+
+                return SuccessResponse(new { appointment = response }, "Lấy thông tin lịch hẹn thành công");
             }
             catch (Exception ex)
             {
@@ -149,7 +189,34 @@ namespace SWP391_ITMMS_Api.Controllers
                     }
 
                     var appointments = await _appointmentService.GetAppointmentsByCustomerAsync(user.Customer.Id);
-                    return SuccessResponse(new { appointments }, "Lấy danh sách lịch hẹn thành công");
+                    
+                    // Format response với tên bác sĩ đầy đủ
+                    var formattedAppointments = appointments.Select(a => new
+                    {
+                        a.Id,
+                        a.AppointmentDate,
+                        a.TimeSlot,
+                        a.Type,
+                        a.Status,
+                        a.Notes,
+                        a.CompletedAt,
+                        Doctor = new
+                        {
+                            a.Doctor.Id,
+                            Name = a.Doctor.User.FullName,
+                            a.Doctor.Specialization,
+                            a.Doctor.ConsultationFee,
+                            Phone = a.Doctor.User.Phone
+                        },
+                        TreatmentPlan = a.TreatmentPlan != null ? new
+                        {
+                            a.TreatmentPlan.Id,
+                            a.TreatmentPlan.TreatmentType,
+                            a.TreatmentPlan.Description
+                        } : null
+                    });
+
+                    return SuccessResponse(new { appointments = formattedAppointments }, "Lấy danh sách lịch hẹn thành công");
                 }
                 else if (user?.Role == "Doctor")
                 {
@@ -159,7 +226,35 @@ namespace SWP391_ITMMS_Api.Controllers
                     }
 
                     var appointments = await _appointmentService.GetAppointmentsByDoctorAsync(user.Doctor.Id);
-                    return SuccessResponse(new { appointments }, "Lấy lịch khám của bác sĩ thành công");
+                    
+                    // Format response với tên bệnh nhân đầy đủ
+                    var formattedAppointments = appointments.Select(a => new
+                    {
+                        a.Id,
+                        a.AppointmentDate,
+                        a.TimeSlot,
+                        a.Type,
+                        a.Status,
+                        a.Notes,
+                        a.CompletedAt,
+                        Customer = new
+                        {
+                            a.Customer.Id,
+                            Name = a.Customer.User.FullName,
+                            Phone = a.Customer.User.Phone,
+                            Email = a.Customer.User.Email,
+                            a.Customer.DateOfBirth,
+                            a.Customer.Gender
+                        },
+                        TreatmentPlan = a.TreatmentPlan != null ? new
+                        {
+                            a.TreatmentPlan.Id,
+                            a.TreatmentPlan.TreatmentType,
+                            a.TreatmentPlan.Description
+                        } : null
+                    });
+
+                    return SuccessResponse(new { appointments = formattedAppointments }, "Lấy lịch khám của bác sĩ thành công");
                 }
                 else
                 {

@@ -57,7 +57,39 @@ namespace SWP391_ITMMS_Api.Controllers
                     return NotFound(new { message = "Không tìm thấy hồ sơ bệnh án" });
                 }
                 
-                return Ok(record);
+                // Format response với tên đầy đủ
+                var response = new
+                {
+                    record.Id,
+                    record.CustomerId,
+                    record.DoctorId,
+                    record.AppointmentId,
+                    record.Diagnosis,
+                    record.Symptoms,
+                    record.Treatment,
+                    record.Prescription,
+                    record.RecordDate,
+                    Doctor = new
+                    {
+                        record.Doctor.Id,
+                        Name = record.Doctor.User.FullName,
+                        record.Doctor.Specialization,
+                        record.Doctor.LicenseNumber,
+                        Phone = record.Doctor.User.Phone,
+                        Email = record.Doctor.User.Email
+                    },
+                    Customer = new
+                    {
+                        record.Customer.Id,
+                        Name = record.Customer.User.FullName,
+                        Phone = record.Customer.User.Phone,
+                        Email = record.Customer.User.Email,
+                        record.Customer.DateOfBirth,
+                        record.Customer.Gender
+                    }
+                };
+                
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -91,7 +123,38 @@ namespace SWP391_ITMMS_Api.Controllers
             try
             {
                 var records = await _medicalRecordService.GetMedicalRecordsByDoctorId(doctorId);
-                return Ok(records);
+                
+                // Format response với tên bệnh nhân đầy đủ
+                var formattedRecords = records.Select(record => new
+                {
+                    record.Id,
+                    record.CustomerId,
+                    record.DoctorId,
+                    record.AppointmentId,
+                    record.Diagnosis,
+                    record.Symptoms,
+                    record.Treatment,
+                    record.Prescription,
+                    record.RecordDate,
+                    Customer = new
+                    {
+                        record.Customer.Id,
+                        Name = record.Customer.User.FullName,
+                        Phone = record.Customer.User.Phone,
+                        Email = record.Customer.User.Email,
+                        record.Customer.DateOfBirth,
+                        record.Customer.Gender
+                    },
+                    Appointment = new
+                    {
+                        record.Appointment.Id,
+                        record.Appointment.AppointmentDate,
+                        record.Appointment.Type,
+                        record.Appointment.Status
+                    }
+                });
+                
+                return Ok(formattedRecords);
             }
             catch (Exception ex)
             {
