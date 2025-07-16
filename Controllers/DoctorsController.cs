@@ -265,6 +265,224 @@ namespace SWP391_ITMMS_Api.Controllers
                 return StatusCode(500, new { message = "Lỗi hệ thống" });
             }
         }
+
+        // MANAGEMENT ENDPOINTS - Dành cho Manager để quản lý tất cả doctor
+        [HttpGet("management")]
+        public async Task<IActionResult> GetAllDoctorsForManagement()
+        {
+            try
+            {
+                // TODO: Add authorization check for Manager role
+                // if (!User.IsInRole("Manager") && !User.IsInRole("Admin"))
+                // {
+                //     return Forbid(new { message = "Chỉ Manager mới có quyền truy cập" });
+                // }
+
+                var doctors = await _context.Doctors
+                    .Include(d => d.User)
+                    .Where(d => d.User.IsActive) // Chỉ lọc User.IsActive, không lọc IsAvailable
+                    .Select(d => new 
+                    {
+                        d.Id,
+                        d.UserId,
+                        d.User.FullName,
+                        d.User.Email,
+                        d.User.Phone,
+                        d.User.Address,
+                        d.User.Role,
+                        d.User.CreatedAt,
+                        d.Specialization,
+                        d.LicenseNumber,
+                        d.Education,
+                        d.ExperienceYears,
+                        d.Description,
+                        d.ConsultationFee,
+                        d.IsAvailable,
+                        // Thêm thông tin thống kê
+                        TotalAppointments = d.Appointments.Count(),
+                        CompletedAppointments = d.Appointments.Count(a => a.Status == "Completed"),
+                        AverageRating = d.ReceivedFeedbacks.Any() ? d.ReceivedFeedbacks.Average(f => f.Rating) : 0
+                    })
+                    .OrderBy(d => d.FullName)
+                    .ToListAsync();
+
+                return Ok(new { 
+                    doctors,
+                    totalCount = doctors.Count,
+                    availableCount = doctors.Count(d => d.IsAvailable),
+                    unavailableCount = doctors.Count(d => !d.IsAvailable)
+                });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống" });
+            }
+        }
+
+        [HttpGet("management/{id}")]
+        public async Task<IActionResult> GetDoctorForManagement(int id)
+        {
+            try
+            {
+                // TODO: Add authorization check for Manager role
+                // if (!User.IsInRole("Manager") && !User.IsInRole("Admin"))
+                // {
+                //     return Forbid(new { message = "Chỉ Manager mới có quyền truy cập" });
+                // }
+
+                var doctor = await _context.Doctors
+                    .Include(d => d.User)
+                    .Include(d => d.Appointments)
+                    .Include(d => d.ReceivedFeedbacks)
+                        .ThenInclude(f => f.Customer)
+                            .ThenInclude(c => c.User)
+                    .Where(d => d.Id == id && d.User.IsActive)
+                    .Select(d => new 
+                    {
+                        d.Id,
+                        d.UserId,
+                        d.User.FullName,
+                        d.User.Email,
+                        d.User.Phone,
+                        d.User.Address,
+                        d.User.Role,
+                        d.User.CreatedAt,
+                        d.User.UpdatedAt,
+                        d.Specialization,
+                        d.LicenseNumber,
+                        d.Education,
+                        d.ExperienceYears,
+                        d.Description,
+                        d.ConsultationFee,
+                        d.IsAvailable,
+                        // Thống kê chi tiết
+                        TotalAppointments = d.Appointments.Count(),
+                        CompletedAppointments = d.Appointments.Count(a => a.Status == "Completed"),
+                        CancelledAppointments = d.Appointments.Count(a => a.Status == "Cancelled"),
+                        PendingAppointments = d.Appointments.Count(a => a.Status == "Scheduled"),
+                        AverageRating = d.ReceivedFeedbacks.Any() ? d.ReceivedFeedbacks.Average(f => f.Rating) : 0,
+                        TotalFeedbacks = d.ReceivedFeedbacks.Count(),
+                        // Lịch sử feedback gần đây
+                        RecentFeedbacks = d.ReceivedFeedbacks
+                            .OrderByDescending(f => f.CreatedAt)
+                            .Take(5)
+                            .Select(f => new 
+                            {
+                                f.Id,
+                                f.Rating,
+                                f.Comment,
+                                f.CreatedAt,
+                                CustomerName = f.Customer.User.FullName
+                            })
+                            .ToList()
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (doctor == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy bác sĩ" });
+                }
+
+                return Ok(new { doctor });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống" });
+            }
+        }
+
+        [HttpPut("management/{id}/toggle-availability")]
+        public async Task<IActionResult> ToggleDoctorAvailability(int id)
+        {
+            try
+            {
+                // TODO: Add authorization check for Manager role
+                // if (!User.IsInRole("Manager") && !User.IsInRole("Admin"))
+                // {
+                //     return Forbid(new { message = "Chỉ Manager mới có quyền truy cập" });
+                // }
+
+                var doctor = await _context.Doctors.FindAsync(id);
+                if (doctor == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy bác sĩ" });
+                }
+
+                doctor.IsAvailable = !doctor.IsAvailable;
+                _context.Doctors.Update(doctor);
+                await _context.SaveChangesAsync();
+
+                return Ok(new 
+                { 
+                    message = $"Đã {(doctor.IsAvailable ? "kích hoạt" : "vô hiệu hóa")} bác sĩ thành công",
+                    isAvailable = doctor.IsAvailable
+                });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống" });
+            }
+        }
+
+        [HttpGet("management/search")]
+        public async Task<IActionResult> SearchDoctorsForManagement(
+            [FromQuery] string? name, 
+            [FromQuery] string? specialization,
+            [FromQuery] bool? isAvailable)
+        {
+            try
+            {
+                // TODO: Add authorization check for Manager role
+                // if (!User.IsInRole("Manager") && !User.IsInRole("Admin"))
+                // {
+                //     return Forbid(new { message = "Chỉ Manager mới có quyền truy cập" });
+                // }
+
+                var query = _context.Doctors
+                    .Include(d => d.User)
+                    .Where(d => d.User.IsActive); // Chỉ lọc User.IsActive
+
+                if (!string.IsNullOrEmpty(name))
+                {
+                    query = query.Where(d => d.User.FullName.Contains(name));
+                }
+
+                if (!string.IsNullOrEmpty(specialization))
+                {
+                    query = query.Where(d => d.Specialization.Contains(specialization));
+                }
+
+                if (isAvailable.HasValue)
+                {
+                    query = query.Where(d => d.IsAvailable == isAvailable.Value);
+                }
+
+                var doctors = await query
+                    .Select(d => new 
+                    {
+                        d.Id,
+                        d.User.FullName,
+                        d.User.Email,
+                        d.User.Phone,
+                        d.Specialization,
+                        d.LicenseNumber,
+                        d.ExperienceYears,
+                        d.ConsultationFee,
+                        d.IsAvailable,
+                        d.User.CreatedAt,
+                        TotalAppointments = d.Appointments.Count(),
+                        AverageRating = d.ReceivedFeedbacks.Any() ? d.ReceivedFeedbacks.Average(f => f.Rating) : 0
+                    })
+                    .OrderBy(d => d.FullName)
+                    .ToListAsync();
+
+                return Ok(new { doctors });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống" });
+            }
+        }
     }
 
     public class UpdateDoctorDto
