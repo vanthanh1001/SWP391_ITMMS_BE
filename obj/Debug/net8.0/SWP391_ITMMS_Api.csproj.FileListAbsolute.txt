@@ -138,3 +138,6 @@ C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\obj\Debug\net8.0\re
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\obj\Debug\net8.0\SWP391_ITMMS_Api.pdb
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\obj\Debug\net8.0\SWP391_ITMMS_Api.genruntimeconfig.cache
 C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\obj\Debug\net8.0\ref\SWP391_ITMMS_Api.dll
+C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\Publitio-NET.dll
+C:\Users\Lenovo\OneDrive\Desktop\SWP391_SU25\SWP391_ITMMS_BE\bin\Debug\net8.0\CloudinaryDotNet.dll

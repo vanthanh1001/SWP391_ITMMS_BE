@@ -14,5 +14,6 @@ namespace SWP391_ITMMS_Api.Services
         Task<bool> DeactivateUserAsync(int id);
         Task<bool> EmailExistsAsync(string email);
         Task<bool> UsernameExistsAsync(string username);
+        Task<bool> UpdateAvatarUrlAsync(int userId, string avatarUrl);
     }
 } 

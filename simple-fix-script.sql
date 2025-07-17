@@ -33,3 +33,14 @@ PRINT 'All migrations marked as applied.';
 
 -- Verification
 SELECT MigrationId, ProductVersion FROM [__EFMigrationsHistory] ORDER BY MigrationId; 
+
+-- Add AvatarUrl column to Users table
+IF NOT EXISTS (
+    SELECT * FROM sys.columns 
+    WHERE object_id = OBJECT_ID(N'[dbo].[Users]') 
+    AND name = 'AvatarUrl'
+)
+BEGIN
+    ALTER TABLE [dbo].[Users]
+    ADD AvatarUrl NVARCHAR(500) NULL
+END 

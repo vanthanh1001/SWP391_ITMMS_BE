@@ -31,6 +31,9 @@ namespace SWP391_ITMMS_Api.Models
         [StringLength(200)]
         public string Address { get; set; }
         
+        [StringLength(500)]
+        public string? AvatarUrl { get; set; }
+        
         [Required]
         public string Role { get; set; } = "Customer"; // Guest, Customer, Doctor, Manager, Admin
         

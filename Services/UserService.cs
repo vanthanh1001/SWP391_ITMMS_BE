@@ -190,5 +190,21 @@ namespace SWP391_ITMMS_Api.Services
         {
             return await _context.Users.AnyAsync(u => u.Username == username);
         }
+
+        public async Task<bool> UpdateAvatarUrlAsync(int userId, string avatarUrl)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                return false;
+
+            // If user already has an avatar, we might want to delete it from Cloudinary
+            // This would require storing the public_id of the image, which we can add later
+
+            user.AvatarUrl = avatarUrl;
+            user.UpdatedAt = DateTime.Now;
+            
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 } 
