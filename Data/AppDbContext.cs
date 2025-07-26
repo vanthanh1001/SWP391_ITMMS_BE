@@ -239,64 +239,68 @@ namespace SWP391_ITMMS_Api.Data
             );
 
             // Seed Treatment Services
-            modelBuilder.Entity<TreatmentService>().HasData(
-                new TreatmentService
-                {
-                    Id = 1,
-                    ServiceName = "Thụ tinh trong ống nghiệm (IVF)",
-                    ServiceCode = "IVF001",
-                    Description = "Kỹ thuật hỗ trợ sinh sản hiện đại, tỷ lệ thành công cao. Quy trình bao gồm kích thích buồng trung, lấy trứng, thụ tinh ngoài cơ thể và chuyển phôi.",
-                    BasePrice = 85000000,
-                    Procedures = "Khám sàng lọc → Kích thích buồng trung → Lấy trứng → Thụ tinh → Nuôi cấy phôi → Chuyển phôi",
-                    Requirements = "Khám tổng quát, xét nghiệm hormone, siêu âm, tinh dịch đồ",
-                    DurationDays = 30,
-                    SuccessRate = 68.5f,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now
-                },
-                new TreatmentService
-                {
-                    Id = 2,
-                    ServiceName = "Thụ tinh nhân tạo (IUI)",
-                    ServiceCode = "IUI001",
-                    Description = "Kỹ thuật đưa tinh trùng đã được xử lý vào buồng tử cung vào thời điểm rụng trứng.",
-                    BasePrice = 15000000,
-                    Procedures = "Khám sàng lọc → Theo dõi rụng trứng → Xử lý tinh trùng → Bơm tinh trùng vào tử cung",
-                    Requirements = "Vòi trứng thông thoáng, tinh trùng đạt chất lượng tối thiểu",
-                    DurationDays = 14,
-                    SuccessRate = 35.2f,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now
-                },
-                new TreatmentService
-                {
-                    Id = 3,
-                    ServiceName = "IVF với ICSI",
-                    ServiceCode = "ICSI001",
-                    Description = "Kỹ thuật tiêm tinh trùng vào bào tương trứng, áp dụng cho các trường hợp nam giới có chất lượng tinh trùng kém.",
-                    BasePrice = 95000000,
-                    Procedures = "Quy trình IVF kết hợp với kỹ thuật ICSI",
-                    Requirements = "Tinh trùng số lượng ít hoặc chất lượng kém",
-                    DurationDays = 35,
-                    SuccessRate = 72.3f,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now
-                },
-                new TreatmentService
-                {
-                    Id = 4,
-                    ServiceName = "Điều trị nội khoa hiếm muộn",
-                    ServiceCode = "MED001",
-                    Description = "Điều trị bằng thuốc cho các trường hợp rối loạn nội tiết, PCOS, rối loạn tinh trùng.",
-                    BasePrice = 5000000,
-                    Procedures = "Khám và chẩn đoán → Điều trị nội khoa → Theo dõi đáp ứng",
-                    Requirements = "Khám tổng quát, xét nghiệm chuyên sâu",
-                    DurationDays = 90,
-                    SuccessRate = 45.7f,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now
-                }
-            );
+            // modelBuilder.Entity<TreatmentService>().HasData(
+            //     new TreatmentService
+            //     {
+            //         Id = 1,
+            //         ServiceName = "Thụ tinh trong ống nghiệm (IVF)",
+            //         ServiceCode = "IVF001",
+            //         Description = "Kỹ thuật hỗ trợ sinh sản hiện đại, tỷ lệ thành công cao. Quy trình bao gồm kích thích buồng trung, lấy trứng, thụ tinh ngoài cơ thể và chuyển phôi.",
+            //         BasePrice = 85000000,
+            //         Procedures = "Khám sàng lọc → Kích thích buồng trung → Lấy trứng → Thụ tinh → Nuôi cấy phôi → Chuyển phôi",
+            //         Requirements = "Khám tổng quát, xét nghiệm hormone, siêu âm, tinh dịch đồ",
+            //         DurationDays = 30,
+            //         SuccessRate = 68.5f,
+            //         IsActive = true,
+            //         CreatedAt = DateTime.Now,
+            //         ImageUrl = ""
+            //     },
+            //     new TreatmentService
+            //     {
+            //         Id = 2,
+            //         ServiceName = "Thụ tinh nhân tạo (IUI)",
+            //         ServiceCode = "IUI001",
+            //         Description = "Kỹ thuật đưa tinh trùng đã được xử lý vào buồng tử cung vào thời điểm rụng trứng.",
+            //         BasePrice = 15000000,
+            //         Procedures = "Khám sàng lọc → Theo dõi rụng trứng → Xử lý tinh trùng → Bơm tinh trùng vào tử cung",
+            //         Requirements = "Vòi trứng thông thoáng, tinh trùng đạt chất lượng tối thiểu",
+            //         DurationDays = 14,
+            //         SuccessRate = 35.2f,
+            //         IsActive = true,
+            //         CreatedAt = DateTime.Now,
+            //         ImageUrl = ""
+            //     },
+            //     new TreatmentService
+            //     {
+            //         Id = 3,
+            //         ServiceName = "IVF với ICSI",
+            //         ServiceCode = "ICSI001",
+            //         Description = "Kỹ thuật tiêm tinh trùng vào bào tương trứng, áp dụng cho các trường hợp nam giới có chất lượng tinh trùng kém.",
+            //         BasePrice = 95000000,
+            //         Procedures = "Quy trình IVF kết hợp với kỹ thuật ICSI",
+            //         Requirements = "Tinh trùng số lượng ít hoặc chất lượng kém",
+            //         DurationDays = 35,
+            //         SuccessRate = 72.3f,
+            //         IsActive = true,
+            //         CreatedAt = DateTime.Now,
+            //         ImageUrl = ""
+            //     },
+            //     new TreatmentService
+            //     {
+            //         Id = 4,
+            //         ServiceName = "Điều trị nội khoa hiếm muộn",
+            //         ServiceCode = "MED001",
+            //         Description = "Điều trị bằng thuốc cho các trường hợp rối loạn nội tiết, PCOS, rối loạn tinh trùng.",
+            //         BasePrice = 5000000,
+            //         Procedures = "Khám và chẩn đoán → Điều trị nội khoa → Theo dõi đáp ứng",
+            //         Requirements = "Khám tổng quát, xét nghiệm chuyên sâu",
+            //         DurationDays = 90,
+            //         SuccessRate = 45.7f,
+            //         IsActive = true,
+            //         CreatedAt = DateTime.Now,
+            //         ImageUrl = ""
+            //     }
+            // );
         }
     }
 } 

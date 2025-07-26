@@ -12,8 +12,8 @@ using SWP391_ITMMS_Api.Data;
 namespace SWP391_ITMMS_Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250623085916_AddTreatmentServiceAndEnhancements")]
-    partial class AddTreatmentServiceAndEnhancements
+    [Migration("20250726115122_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -546,6 +546,11 @@ namespace SWP391_ITMMS_Api.Migrations
                     b.Property<int>("DurationDays")
                         .HasColumnType("int");
 
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -581,64 +586,6 @@ namespace SWP391_ITMMS_Api.Migrations
                         .IsUnique();
 
                     b.ToTable("TreatmentServices");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BasePrice = 85000000m,
-                            CreatedAt = new DateTime(2025, 6, 23, 15, 59, 14, 926, DateTimeKind.Local).AddTicks(3051),
-                            Description = "Kỹ thuật hỗ trợ sinh sản hiện đại, tỷ lệ thành công cao. Quy trình bao gồm kích thích buồng trung, lấy trứng, thụ tinh ngoài cơ thể và chuyển phôi.",
-                            DurationDays = 30,
-                            IsActive = true,
-                            Procedures = "Khám sàng lọc → Kích thích buồng trung → Lấy trứng → Thụ tinh → Nuôi cấy phôi → Chuyển phôi",
-                            Requirements = "Khám tổng quát, xét nghiệm hormone, siêu âm, tinh dịch đồ",
-                            ServiceCode = "IVF001",
-                            ServiceName = "Thụ tinh trong ống nghiệm (IVF)",
-                            SuccessRate = 68.5f
-                        },
-                        new
-                        {
-                            Id = 2,
-                            BasePrice = 15000000m,
-                            CreatedAt = new DateTime(2025, 6, 23, 15, 59, 14, 926, DateTimeKind.Local).AddTicks(3064),
-                            Description = "Kỹ thuật đưa tinh trùng đã được xử lý vào buồng tử cung vào thời điểm rụng trứng.",
-                            DurationDays = 14,
-                            IsActive = true,
-                            Procedures = "Khám sàng lọc → Theo dõi rụng trứng → Xử lý tinh trùng → Bơm tinh trùng vào tử cung",
-                            Requirements = "Vòi trứng thông thoáng, tinh trùng đạt chất lượng tối thiểu",
-                            ServiceCode = "IUI001",
-                            ServiceName = "Thụ tinh nhân tạo (IUI)",
-                            SuccessRate = 35.2f
-                        },
-                        new
-                        {
-                            Id = 3,
-                            BasePrice = 95000000m,
-                            CreatedAt = new DateTime(2025, 6, 23, 15, 59, 14, 926, DateTimeKind.Local).AddTicks(3071),
-                            Description = "Kỹ thuật tiêm tinh trùng vào bào tương trứng, áp dụng cho các trường hợp nam giới có chất lượng tinh trùng kém.",
-                            DurationDays = 35,
-                            IsActive = true,
-                            Procedures = "Quy trình IVF kết hợp với kỹ thuật ICSI",
-                            Requirements = "Tinh trùng số lượng ít hoặc chất lượng kém",
-                            ServiceCode = "ICSI001",
-                            ServiceName = "IVF với ICSI",
-                            SuccessRate = 72.3f
-                        },
-                        new
-                        {
-                            Id = 4,
-                            BasePrice = 5000000m,
-                            CreatedAt = new DateTime(2025, 6, 23, 15, 59, 14, 926, DateTimeKind.Local).AddTicks(3532),
-                            Description = "Điều trị bằng thuốc cho các trường hợp rối loạn nội tiết, PCOS, rối loạn tinh trùng.",
-                            DurationDays = 90,
-                            IsActive = true,
-                            Procedures = "Khám và chẩn đoán → Điều trị nội khoa → Theo dõi đáp ứng",
-                            Requirements = "Khám tổng quát, xét nghiệm chuyên sâu",
-                            ServiceCode = "MED001",
-                            ServiceName = "Điều trị nội khoa hiếm muộn",
-                            SuccessRate = 45.7f
-                        });
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.User", b =>
@@ -653,6 +600,10 @@ namespace SWP391_ITMMS_Api.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -704,11 +655,11 @@ namespace SWP391_ITMMS_Api.Migrations
                         {
                             Id = 1,
                             Address = "System",
-                            CreatedAt = new DateTime(2025, 6, 23, 15, 59, 14, 452, DateTimeKind.Local).AddTicks(410),
+                            CreatedAt = new DateTime(2025, 7, 26, 18, 51, 21, 450, DateTimeKind.Local).AddTicks(4003),
                             Email = "admin@itmms.com",
                             FullName = "System Administrator",
                             IsActive = true,
-                            Password = "$2a$11$vy9OQYSg31Ab9sXsF6QsT.HnkIvNUXOxPWcFsdtA3xJopIvvYYN6y",
+                            Password = "$2a$11$YcJW1REk5QeXR2ut1nLS8O2HByaLSnZHRSdFqmRffRj9iUBHRi0rO",
                             Phone = "0123456789",
                             Role = "Admin",
                             Username = "admin"
@@ -717,11 +668,11 @@ namespace SWP391_ITMMS_Api.Migrations
                         {
                             Id = 2,
                             Address = "Hà Nội",
-                            CreatedAt = new DateTime(2025, 6, 23, 15, 59, 14, 683, DateTimeKind.Local).AddTicks(6347),
+                            CreatedAt = new DateTime(2025, 7, 26, 18, 51, 21, 677, DateTimeKind.Local).AddTicks(7381),
                             Email = "doctor1@itmms.com",
                             FullName = "Dr. Nguyễn Văn A",
                             IsActive = true,
-                            Password = "$2a$11$fJ.tdjzckU3UyV.7GgGQRuZrHpQKEPuRPcNJqdSpVVVtzwJR1xmb6",
+                            Password = "$2a$11$LdVcYx1.wfiTfbj4wOjwTeIFUC4DlJvwOPgbByPHzSVksFKAMgwhW",
                             Phone = "0987654321",
                             Role = "Doctor",
                             Username = "doctor1"
@@ -730,11 +681,11 @@ namespace SWP391_ITMMS_Api.Migrations
                         {
                             Id = 4,
                             Address = "Hà Nội",
-                            CreatedAt = new DateTime(2025, 6, 23, 15, 59, 14, 926, DateTimeKind.Local).AddTicks(1700),
+                            CreatedAt = new DateTime(2025, 7, 26, 18, 51, 21, 895, DateTimeKind.Local).AddTicks(5591),
                             Email = "manager@itmms.com",
                             FullName = "Nguyễn Thị B",
                             IsActive = true,
-                            Password = "$2a$11$Iiy6964RJbcyzlKJs9y67uELPqkQvcAQL3MiBBC0x4BGnxH/zsTjK",
+                            Password = "$2a$11$wbSKrTV/lm3tfUYrOZMikOHgOgj13gnfGC9AylmWUOZ0/EGAj3t6G",
                             Phone = "0123456790",
                             Role = "Manager",
                             Username = "manager1"

@@ -521,6 +521,9 @@ namespace SWP391_ITMMS_Api.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
         
+        [StringLength(500)]
+        public string? ImageUrl { get; set; } // Link ảnh đại diện dịch vụ, không required
+
         // Navigation properties
         [JsonIgnore]
         public virtual ICollection<TreatmentPlan> TreatmentPlans { get; set; } = new List<TreatmentPlan>();

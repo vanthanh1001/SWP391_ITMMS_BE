@@ -8,65 +8,87 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SWP391_ITMMS_Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "Username",
-                table: "Users",
-                type: "nvarchar(50)",
-                maxLength: 50,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
+            migrationBuilder.CreateTable(
+                name: "TreatmentHistories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TreatmentHistories", x => x.Id);
+                });
 
-            migrationBuilder.AlterColumn<string>(
-                name: "FullName",
-                table: "Users",
-                type: "nvarchar(100)",
-                maxLength: 100,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
+            migrationBuilder.CreateTable(
+                name: "TreatmentServices",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ServiceName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ServiceCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    BasePrice = table.Column<decimal>(type: "decimal(15,2)", nullable: false),
+                    Procedures = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Requirements = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    DurationDays = table.Column<int>(type: "int", nullable: false),
+                    SuccessRate = table.Column<float>(type: "real", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TreatmentServices", x => x.Id);
+                });
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Email",
-                table: "Users",
-                type: "nvarchar(450)",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
+            migrationBuilder.CreateTable(
+                name: "UserFeedbacks",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserFeedbacks", x => x.Id);
+                });
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Address",
-                table: "Users",
-                type: "nvarchar(200)",
-                maxLength: 200,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "CreatedAt",
-                table: "Users",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
-
-            migrationBuilder.AddColumn<bool>(
-                name: "IsActive",
-                table: "Users",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "UpdatedAt",
-                table: "Users",
-                type: "datetime2",
-                nullable: true);
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "BlogPosts",
@@ -184,12 +206,21 @@ namespace SWP391_ITMMS_Api.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
                     DoctorId = table.Column<int>(type: "int", nullable: false),
+                    TreatmentServiceId = table.Column<int>(type: "int", nullable: true),
                     TreatmentType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    TotalCost = table.Column<decimal>(type: "decimal(12,2)", nullable: false)
+                    TotalCost = table.Column<decimal>(type: "decimal(12,2)", nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "decimal(12,2)", nullable: false),
+                    PaymentStatus = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CurrentPhase = table.Column<int>(type: "int", nullable: false),
+                    PhaseDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    NextPhaseDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    NextVisitDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    ProgressNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -206,6 +237,12 @@ namespace SWP391_ITMMS_Api.Migrations
                         principalTable: "Doctors",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TreatmentPlans_TreatmentServices_TreatmentServiceId",
+                        column: x => x.TreatmentServiceId,
+                        principalTable: "TreatmentServices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -221,7 +258,8 @@ namespace SWP391_ITMMS_Api.Migrations
                     TimeSlot = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -346,29 +384,18 @@ namespace SWP391_ITMMS_Api.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "Address", "CreatedAt", "Email", "FullName", "IsActive", "Password", "Phone", "Role", "UpdatedAt", "Username" },
+                columns: new[] { "Id", "Address", "AvatarUrl", "CreatedAt", "Email", "FullName", "IsActive", "Password", "Phone", "Role", "UpdatedAt", "Username" },
                 values: new object[,]
                 {
-                    { 1, "System", new DateTime(2025, 6, 23, 12, 21, 42, 170, DateTimeKind.Local).AddTicks(1434), "admin@itmms.com", "System Administrator", true, "$2a$11$erkShz7KfMT4k.Ofd1PGhO/CoYU0ABNcvslbFkUM1Zi6tWTo7ytBG", "0123456789", "Admin", null, "admin" },
-                    { 2, "Hà Nội", new DateTime(2025, 6, 23, 12, 21, 42, 400, DateTimeKind.Local).AddTicks(925), "doctor1@itmms.com", "Dr. Nguyễn Văn A", true, "$2a$11$ZzmiMH8tRRK0Ujwm5N5zT.Cc6BmB66u8AgYOP0fWgVV4ppSP2Hcjm", "0987654321", "Doctor", null, "doctor1" }
+                    { 1, "System", null, new DateTime(2025, 7, 26, 18, 51, 21, 450, DateTimeKind.Local).AddTicks(4003), "admin@itmms.com", "System Administrator", true, "$2a$11$YcJW1REk5QeXR2ut1nLS8O2HByaLSnZHRSdFqmRffRj9iUBHRi0rO", "0123456789", "Admin", null, "admin" },
+                    { 2, "Hà Nội", null, new DateTime(2025, 7, 26, 18, 51, 21, 677, DateTimeKind.Local).AddTicks(7381), "doctor1@itmms.com", "Dr. Nguyễn Văn A", true, "$2a$11$LdVcYx1.wfiTfbj4wOjwTeIFUC4DlJvwOPgbByPHzSVksFKAMgwhW", "0987654321", "Doctor", null, "doctor1" },
+                    { 4, "Hà Nội", null, new DateTime(2025, 7, 26, 18, 51, 21, 895, DateTimeKind.Local).AddTicks(5591), "manager@itmms.com", "Nguyễn Thị B", true, "$2a$11$wbSKrTV/lm3tfUYrOZMikOHgOgj13gnfGC9AylmWUOZ0/EGAj3t6G", "0123456790", "Manager", null, "manager1" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Doctors",
                 columns: new[] { "Id", "ConsultationFee", "Description", "Education", "ExperienceYears", "IsAvailable", "LicenseNumber", "Specialization", "UserId" },
                 values: new object[] { 1, 500000m, "Chuyên gia điều trị hiếm muộn với 10 năm kinh nghiệm", "Bác sĩ chuyên khoa II - Đại học Y Hà Nội", 10, true, "BS001234", "Sản phụ khoa - Hiếm muộn", 2 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_Email",
-                table: "Users",
-                column: "Email",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_Username",
-                table: "Users",
-                column: "Username",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_CustomerId",
@@ -463,6 +490,29 @@ namespace SWP391_ITMMS_Api.Migrations
                 name: "IX_TreatmentPlans_DoctorId",
                 table: "TreatmentPlans",
                 column: "DoctorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TreatmentPlans_TreatmentServiceId",
+                table: "TreatmentPlans",
+                column: "TreatmentServiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TreatmentServices_ServiceCode",
+                table: "TreatmentServices",
+                column: "ServiceCode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Username",
+                table: "Users",
+                column: "Username",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -481,6 +531,12 @@ namespace SWP391_ITMMS_Api.Migrations
                 name: "TestResults");
 
             migrationBuilder.DropTable(
+                name: "TreatmentHistories");
+
+            migrationBuilder.DropTable(
+                name: "UserFeedbacks");
+
+            migrationBuilder.DropTable(
                 name: "MedicalRecords");
 
             migrationBuilder.DropTable(
@@ -495,70 +551,11 @@ namespace SWP391_ITMMS_Api.Migrations
             migrationBuilder.DropTable(
                 name: "Doctors");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Users_Email",
-                table: "Users");
+            migrationBuilder.DropTable(
+                name: "TreatmentServices");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Users_Username",
-                table: "Users");
-
-            migrationBuilder.DeleteData(
-                table: "Users",
-                keyColumn: "Id",
-                keyValue: 1);
-
-            migrationBuilder.DeleteData(
-                table: "Users",
-                keyColumn: "Id",
-                keyValue: 2);
-
-            migrationBuilder.DropColumn(
-                name: "CreatedAt",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "IsActive",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "UpdatedAt",
-                table: "Users");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Username",
-                table: "Users",
-                type: "nvarchar(max)",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(50)",
-                oldMaxLength: 50);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "FullName",
-                table: "Users",
-                type: "nvarchar(max)",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(100)",
-                oldMaxLength: 100);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Email",
-                table: "Users",
-                type: "nvarchar(max)",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(450)");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Address",
-                table: "Users",
-                type: "nvarchar(max)",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(200)",
-                oldMaxLength: 200);
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

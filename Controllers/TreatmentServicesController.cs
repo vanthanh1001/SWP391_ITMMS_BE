@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SWP391_ITMMS_Api.Data;
 using SWP391_ITMMS_Api.Models;
+using SWP391_ITMMS_Api.Services;
 
 namespace SWP391_ITMMS_Api.Controllers
 {
@@ -10,10 +11,12 @@ namespace SWP391_ITMMS_Api.Controllers
     public class TreatmentServicesController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public TreatmentServicesController(AppDbContext context)
+        public TreatmentServicesController(AppDbContext context, ICloudinaryService cloudinaryService)
         {
             _context = context;
+            _cloudinaryService = cloudinaryService;
         }
 
         /// <summary>
@@ -83,7 +86,7 @@ namespace SWP391_ITMMS_Api.Controllers
         /// Tạo dịch vụ điều trị mới (Admin/Manager only)
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> CreateTreatmentService([FromBody] TreatmentServiceDto dto)
+        public async Task<IActionResult> CreateTreatmentService([FromForm] TreatmentServiceDto dto, IFormFile imageFile)
         {
             try
             {
@@ -99,6 +102,12 @@ namespace SWP391_ITMMS_Api.Controllers
                     });
                 }
 
+                string imageUrl = null;
+                if (imageFile != null)
+                {
+                    imageUrl = await _cloudinaryService.UploadImageAsync(imageFile);
+                }
+
                 var service = new TreatmentService
                 {
                     ServiceName = dto.ServiceName,
@@ -109,6 +118,7 @@ namespace SWP391_ITMMS_Api.Controllers
                     Requirements = dto.Requirements,
                     DurationDays = dto.DurationDays,
                     SuccessRate = dto.SuccessRate,
+                    ImageUrl = imageUrl,
                     IsActive = true,
                     CreatedAt = DateTime.Now
                 };
@@ -135,7 +145,7 @@ namespace SWP391_ITMMS_Api.Controllers
         /// Cập nhật dịch vụ điều trị (Admin/Manager only)
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTreatmentService(int id, [FromBody] TreatmentServiceDto dto)
+        public async Task<IActionResult> UpdateTreatmentService(int id, [FromForm] TreatmentServiceDto dto, IFormFile imageFile)
         {
             try
             {
@@ -158,6 +168,13 @@ namespace SWP391_ITMMS_Api.Controllers
                         success = false,
                         message = "Mã dịch vụ đã tồn tại" 
                     });
+                }
+
+                if (imageFile != null)
+                {
+                    // Nếu có ảnh mới, upload và cập nhật
+                    var imageUrl = await _cloudinaryService.UploadImageAsync(imageFile);
+                    service.ImageUrl = imageUrl;
                 }
 
                 service.ServiceName = dto.ServiceName;
@@ -305,5 +322,6 @@ namespace SWP391_ITMMS_Api.Controllers
         public string Requirements { get; set; }
         public int DurationDays { get; set; }
         public float SuccessRate { get; set; }
+        public string? ImageUrl { get; set; } // Link ảnh đại diện dịch vụ, không required
     }
 } 
