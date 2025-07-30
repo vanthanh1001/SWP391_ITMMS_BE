@@ -369,6 +369,7 @@ namespace SWP391_ITMMS_Api.Controllers
                         d.User.Role,
                         d.User.CreatedAt,
                         d.User.UpdatedAt,
+                        avatarUrl = d.User.AvatarUrl,
                         d.Specialization,
                         d.LicenseNumber,
                         d.Education,
