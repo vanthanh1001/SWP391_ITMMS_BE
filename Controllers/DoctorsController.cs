@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SWP391_ITMMS_Api.Data;
 using SWP391_ITMMS_Api.Models;
+using SWP391_ITMMS_Api.Services;
 
 namespace SWP391_ITMMS_Api.Controllers
 {
@@ -10,10 +11,12 @@ namespace SWP391_ITMMS_Api.Controllers
     public class DoctorsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public DoctorsController(AppDbContext context)
+        public DoctorsController(AppDbContext context, ICloudinaryService cloudinaryService)
         {
             _context = context;
+            _cloudinaryService = cloudinaryService;
         }
 
         [HttpGet]
@@ -31,6 +34,7 @@ namespace SWP391_ITMMS_Api.Controllers
                         d.User.FullName,
                         d.User.Email,
                         d.User.Phone,
+                        avatarUrl = d.User.AvatarUrl,
                         d.Specialization,
                         d.LicenseNumber,
                         d.Education,
@@ -65,6 +69,7 @@ namespace SWP391_ITMMS_Api.Controllers
                         d.User.Email,
                         d.User.Phone,
                         d.User.Address,
+                        avatarUrl = d.User.AvatarUrl,
                         d.Specialization,
                         d.LicenseNumber,
                         d.Education,
@@ -266,6 +271,21 @@ namespace SWP391_ITMMS_Api.Controllers
             }
         }
 
+        [HttpPost("{id}/avatar")]
+        public async Task<IActionResult> UploadDoctorAvatar(int id, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "No file uploaded" });
+            var doctor = await _context.Doctors.Include(d => d.User).FirstOrDefaultAsync(d => d.Id == id);
+            if (doctor == null || doctor.User == null)
+                return NotFound(new { message = "Không tìm thấy bác sĩ hoặc user" });
+            var imageUrl = await _cloudinaryService.UploadImageAsync(file);
+            doctor.User.AvatarUrl = imageUrl;
+            _context.Users.Update(doctor.User);
+            await _context.SaveChangesAsync();
+            return Ok(new { avatarUrl = imageUrl });
+        }
+
         // MANAGEMENT ENDPOINTS - Dành cho Manager để quản lý tất cả doctor
         [HttpGet("management")]
         public async Task<IActionResult> GetAllDoctorsForManagement()
@@ -291,6 +311,7 @@ namespace SWP391_ITMMS_Api.Controllers
                         d.User.Address,
                         d.User.Role,
                         d.User.CreatedAt,
+                        avatarUrl = d.User.AvatarUrl,
                         d.Specialization,
                         d.LicenseNumber,
                         d.Education,
