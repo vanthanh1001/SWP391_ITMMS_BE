@@ -37,6 +37,19 @@ namespace SWP391_ITMMS_Api.Controllers
                     return NotFound(new { success = false, message = "Không tìm thấy bác sĩ" });
                 }
 
+                // Validate if customer has active treatment plan
+                var hasActivePlan = await _context.TreatmentPlans
+                    .AnyAsync(tp => tp.CustomerId == dto.CustomerId 
+                                && tp.Status == "Active");
+
+                if (hasActivePlan)
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = "Bệnh nhân đang có kế hoạch điều trị chưa kết thúc. Vui lòng hoàn thành kế hoạch hiện tại trước khi tạo mới." 
+                    });
+                }
+
                 // Validate treatment service if provided
                 TreatmentService? treatmentService = null;
                 if (dto.TreatmentServiceId.HasValue)

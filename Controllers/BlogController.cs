@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SWP391_ITMMS_Api.Models;
-using System.Collections.Generic;
-using System.Linq;
+using SWP391_ITMMS_Api.Data;
+using SWP391_ITMMS_Api.Services;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SWP391_ITMMS_Api.Controllers
 {
@@ -9,55 +12,481 @@ namespace SWP391_ITMMS_Api.Controllers
     [Route("api/blog")]
     public class BlogController : ControllerBase
     {
-        // Giả lập database bằng static list
-        private static List<BlogPost> _posts = new List<BlogPost>();
+        private readonly AppDbContext _context;
+        private readonly IJwtService _jwtService;
 
-        // GET: /api/blog
+        public BlogController(AppDbContext context, IJwtService jwtService)
+        {
+            _context = context;
+            _jwtService = jwtService;
+        }
+
+        // DTO classes
+        public class CreateBlogPostDto
+        {
+            [Required]
+            [StringLength(200, ErrorMessage = "Tiêu đề không được quá 200 ký tự")]
+            public string Title { get; set; }
+
+            [Required]
+            [MinLength(50, ErrorMessage = "Nội dung phải có ít nhất 50 ký tự")]
+            public string Content { get; set; }
+
+            [StringLength(50)]
+            public string Category { get; set; } = "Health Tips";
+
+            public bool IsPublished { get; set; } = false;
+        }
+
+        public class UpdateBlogPostDto
+        {
+            [StringLength(200, ErrorMessage = "Tiêu đề không được quá 200 ký tự")]
+            public string? Title { get; set; }
+
+            [MinLength(50, ErrorMessage = "Nội dung phải có ít nhất 50 ký tự")]
+            public string? Content { get; set; }
+
+            [StringLength(50)]
+            public string? Category { get; set; }
+
+            public bool? IsPublished { get; set; }
+        }
+
+        public class BlogPostResponseDto
+        {
+            public int Id { get; set; }
+            public string Title { get; set; }
+            public string Content { get; set; }
+            public string Category { get; set; }
+            public DateTime CreatedAt { get; set; }
+            public DateTime? UpdatedAt { get; set; }
+            public bool IsPublished { get; set; }
+            public int AuthorId { get; set; }
+        }
+
+        // CREATE - POST: /api/blog
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> CreateBlogPost([FromBody] CreateBlogPostDto dto)
+        {
+            try
+            {
+                // Validation
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = "Dữ liệu không hợp lệ",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                    });
+                }
+
+                // Lấy token từ header
+                var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return Unauthorized(new { 
+                        success = false, 
+                        message = "Không tìm thấy token xác thực" 
+                    });
+                }
+
+                var token = authHeader.Substring("Bearer ".Length);
+                var userId = _jwtService.GetUserIdFromToken(token);
+
+                if (!userId.HasValue)
+                {
+                    return Unauthorized(new { 
+                        success = false, 
+                        message = "Token không hợp lệ" 
+                    });
+                }
+
+                // Kiểm tra user có tồn tại và là Doctor không
+                var author = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == userId && u.Role == "Doctor");
+
+                if (author == null)
+                {
+                    return BadRequest(new { 
+                        success = false, 
+                        message = "Chỉ bác sĩ mới có thể tạo bài viết blog" 
+                    });
+                }
+
+                // Tạo blog post mới
+                var blogPost = new BlogPost
+                {
+                    AuthorId = author.Id,
+                    Title = dto.Title,
+                    Content = dto.Content,
+                    Category = dto.Category,
+                    IsPublished = dto.IsPublished,
+                    CreatedAt = DateTime.Now
+                };
+
+                // Lưu vào database
+                _context.BlogPosts.Add(blogPost);
+                await _context.SaveChangesAsync();
+
+                // Trả về response
+                var response = new BlogPostResponseDto
+                {
+                    Id = blogPost.Id,
+                    Title = blogPost.Title,
+                    Content = blogPost.Content,
+                    Category = blogPost.Category,
+                    CreatedAt = blogPost.CreatedAt,
+                    UpdatedAt = blogPost.UpdatedAt,
+                    IsPublished = blogPost.IsPublished,
+                    AuthorId = blogPost.AuthorId
+                };
+
+                return CreatedAtAction(nameof(GetBlogPostById), new { id = blogPost.Id }, new { 
+                    success = true, 
+                    message = "Tạo bài viết thành công",
+                    data = response 
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Lỗi hệ thống: " + ex.Message 
+                });
+            }
+        }
+
+        // READ - GET: /api/blog (Lấy danh sách bài viết)
         [HttpGet]
-        public ActionResult<IEnumerable<BlogPost>> GetAll()
+        public async Task<IActionResult> GetAllBlogPosts([FromQuery] string? category, [FromQuery] bool? isPublished)
         {
-            return Ok(_posts);
+            try
+            {
+                var query = _context.BlogPosts
+                    .Include(bp => bp.Author)
+                    .AsQueryable();
+
+                // Filter theo category
+                if (!string.IsNullOrEmpty(category))
+                {
+                    query = query.Where(bp => bp.Category == category);
+                }
+
+                // Filter theo trạng thái published
+                if (isPublished.HasValue)
+                {
+                    query = query.Where(bp => bp.IsPublished == isPublished.Value);
+                }
+
+                var blogPosts = await query
+                    .OrderByDescending(bp => bp.CreatedAt)
+                    .Select(bp => new BlogPostResponseDto
+                    {
+                        Id = bp.Id,
+                        Title = bp.Title,
+                        Content = bp.Content,
+                        Category = bp.Category,
+                        CreatedAt = bp.CreatedAt,
+                        UpdatedAt = bp.UpdatedAt,
+                        IsPublished = bp.IsPublished,
+                        AuthorId = bp.AuthorId
+                    })
+                    .ToListAsync();
+
+                return Ok(new { 
+                    success = true, 
+                    message = "Lấy danh sách bài viết thành công",
+                    data = blogPosts,
+                    totalCount = blogPosts.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Lỗi hệ thống: " + ex.Message 
+                });
+            }
         }
 
-        // GET: /api/blog/{id}
+        // READ - GET: /api/blog/{id} (Lấy chi tiết bài viết)
         [HttpGet("{id}")]
-        public ActionResult<BlogPost> GetById(int id)
+        public async Task<IActionResult> GetBlogPostById(int id)
         {
-            var post = _posts.FirstOrDefault(p => p.Id == id);
-            if (post == null) return NotFound();
-            return Ok(post);
+            try
+            {
+                var blogPost = await _context.BlogPosts
+                    .Include(bp => bp.Author)
+                    .FirstOrDefaultAsync(bp => bp.Id == id);
+
+                if (blogPost == null)
+                {
+                    return NotFound(new { 
+                        success = false, 
+                        message = "Không tìm thấy bài viết" 
+                    });
+                }
+
+                var response = new BlogPostResponseDto
+                {
+                    Id = blogPost.Id,
+                    Title = blogPost.Title,
+                    Content = blogPost.Content,
+                    Category = blogPost.Category,
+                    CreatedAt = blogPost.CreatedAt,
+                    UpdatedAt = blogPost.UpdatedAt,
+                    IsPublished = blogPost.IsPublished,
+                    AuthorId = blogPost.AuthorId
+                };
+
+                return Ok(new { 
+                    success = true, 
+                    message = "Lấy thông tin bài viết thành công",
+                    data = response 
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Lỗi hệ thống: " + ex.Message 
+                });
+            }
         }
 
-        // POST: /api/blog/create
-        [HttpPost("create")]
-        public IActionResult Create([FromBody] BlogPost post)
+        // UPDATE - PUT: /api/blog/{id}
+        [Authorize]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBlogPost(int id, [FromBody] UpdateBlogPostDto dto)
         {
-            post.Id = _posts.Count > 0 ? _posts.Max(p => p.Id) + 1 : 1;
-            post.CreatedAt = DateTime.Now;
-            _posts.Add(post);
-            return CreatedAtAction(nameof(GetById), new { id = post.Id }, post);
+            try
+            {
+                var blogPost = await _context.BlogPosts
+                    .Include(bp => bp.Author)
+                    .FirstOrDefaultAsync(bp => bp.Id == id);
+
+                if (blogPost == null)
+                {
+                    return NotFound(new { 
+                        success = false, 
+                        message = "Không tìm thấy bài viết" 
+                    });
+                }
+
+                // Kiểm tra quyền chỉnh sửa
+                var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return Unauthorized(new { success = false, message = "Không tìm thấy token xác thực" });
+                }
+                var token = authHeader.Substring("Bearer ".Length);
+                var currentUserId = _jwtService.GetUserIdFromToken(token);
+                if (!currentUserId.HasValue)
+                {
+                    return Unauthorized(new { success = false, message = "Token không hợp lệ" });
+                }
+                if (blogPost.AuthorId != currentUserId)
+                {
+                    return Forbid();
+                }
+
+                // Cập nhật thông tin
+                if (!string.IsNullOrEmpty(dto.Title))
+                    blogPost.Title = dto.Title;
+                
+                if (!string.IsNullOrEmpty(dto.Content))
+                    blogPost.Content = dto.Content;
+                
+                if (!string.IsNullOrEmpty(dto.Category))
+                    blogPost.Category = dto.Category;
+                
+                if (dto.IsPublished.HasValue)
+                    blogPost.IsPublished = dto.IsPublished.Value;
+
+                blogPost.UpdatedAt = DateTime.Now;
+
+                _context.BlogPosts.Update(blogPost);
+                await _context.SaveChangesAsync();
+
+                var response = new BlogPostResponseDto
+                {
+                    Id = blogPost.Id,
+                    Title = blogPost.Title,
+                    Content = blogPost.Content,
+                    Category = blogPost.Category,
+                    CreatedAt = blogPost.CreatedAt,
+                    UpdatedAt = blogPost.UpdatedAt,
+                    IsPublished = blogPost.IsPublished,
+                    AuthorId = blogPost.AuthorId
+                };
+
+                return Ok(new { 
+                    success = true, 
+                    message = "Cập nhật bài viết thành công",
+                    data = response
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Lỗi hệ thống: " + ex.Message 
+                });
+            }
         }
 
-        // PUT: /api/blog/update/{id}
-        [HttpPut("update/{id}")]
-        public IActionResult Update(int id, [FromBody] BlogPost updatedPost)
+        // DELETE - DELETE: /api/blog/{id}
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBlogPost(int id)
         {
-            var post = _posts.FirstOrDefault(p => p.Id == id);
-            if (post == null) return NotFound();
-            post.Title = updatedPost.Title;
-            post.Content = updatedPost.Content;
-            post.UpdatedAt = DateTime.Now;
-            return NoContent();
+            try
+            {
+                var blogPost = await _context.BlogPosts.FindAsync(id);
+
+                if (blogPost == null)
+                {
+                    return NotFound(new { 
+                        success = false, 
+                        message = "Không tìm thấy bài viết" 
+                    });
+                }
+
+                // Kiểm tra quyền xóa
+                var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                {
+                    return Unauthorized(new { success = false, message = "Không tìm thấy token xác thực" });
+                }
+                var token = authHeader.Substring("Bearer ".Length);
+                var currentUserId = _jwtService.GetUserIdFromToken(token);
+                if (!currentUserId.HasValue)
+                {
+                    return Unauthorized(new { success = false, message = "Token không hợp lệ" });
+                }
+                if (blogPost.AuthorId != currentUserId)
+                {
+                    return Forbid();
+                }
+
+                _context.BlogPosts.Remove(blogPost);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { 
+                    success = true, 
+                    message = "Xóa bài viết thành công" 
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Lỗi hệ thống: " + ex.Message 
+                });
+            }
         }
 
-        // DELETE: /api/blog/delete/{id}
-        [HttpDelete("delete/{id}")]
-        public IActionResult Delete(int id)
+        // GET: /api/blog/search
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchBlogPosts(
+            [FromQuery] string? keyword,
+            [FromQuery] string? category,
+            [FromQuery] bool? isPublished,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var post = _posts.FirstOrDefault(p => p.Id == id);
-            if (post == null) return NotFound();
-            _posts.Remove(post);
-            return NoContent();
+            try
+            {
+                var query = _context.BlogPosts
+                    .Include(bp => bp.Author)
+                    .AsQueryable();
+
+                // Tìm kiếm theo keyword
+                if (!string.IsNullOrEmpty(keyword))
+                {
+                    query = query.Where(bp => 
+                        bp.Title.Contains(keyword) || 
+                        bp.Content.Contains(keyword));
+                }
+
+                // Lọc theo category
+                if (!string.IsNullOrEmpty(category))
+                {
+                    query = query.Where(bp => bp.Category == category);
+                }
+
+                // Lọc theo trạng thái published
+                if (isPublished.HasValue)
+                {
+                    query = query.Where(bp => bp.IsPublished == isPublished.Value);
+                }
+
+                // Tính tổng số bài viết
+                var totalCount = await query.CountAsync();
+
+                // Phân trang
+                var blogPosts = await query
+                    .OrderByDescending(bp => bp.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(bp => new BlogPostResponseDto
+                    {
+                        Id = bp.Id,
+                        Title = bp.Title,
+                        Content = bp.Content,
+                        Category = bp.Category,
+                        CreatedAt = bp.CreatedAt,
+                        UpdatedAt = bp.UpdatedAt,
+                        IsPublished = bp.IsPublished,
+                        AuthorId = bp.AuthorId
+                    })
+                    .ToListAsync();
+
+                return Ok(new { 
+                    success = true, 
+                    message = "Lấy danh sách bài viết thành công",
+                    data = blogPosts,
+                    pagination = new {
+                        currentPage = page,
+                        pageSize = pageSize,
+                        totalCount = totalCount,
+                        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Lỗi hệ thống: " + ex.Message 
+                });
+            }
+        }
+
+        // GET: /api/blog/categories
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            try
+            {
+                var categories = await _context.BlogPosts
+                    .Select(bp => bp.Category)
+                    .Distinct()
+                    .ToListAsync();
+
+                return Ok(new { 
+                    success = true, 
+                    data = categories 
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Lỗi hệ thống: " + ex.Message 
+                });
+            }
         }
     }
 } 
