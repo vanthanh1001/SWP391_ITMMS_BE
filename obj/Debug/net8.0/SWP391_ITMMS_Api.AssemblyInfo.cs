@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SWP391_ITMMS_Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a8f872f1e71488c3d4b7b015f70c275e7d78573d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b3e3104905ef2625c5f9fab9a042d9653c454f5a")]
 [assembly: System.Reflection.AssemblyProductAttribute("SWP391_ITMMS_Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SWP391_ITMMS_Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

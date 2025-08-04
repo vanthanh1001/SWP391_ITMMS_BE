@@ -330,8 +330,8 @@ namespace SWP391_ITMMS_Api.Controllers
     public class ChangePasswordDto
     {
         public int UserId { get; set; }
-        public string OldPassword { get; set; }
-        public string NewPassword { get; set; }
+        public required string OldPassword { get; set; }
+        public required string NewPassword { get; set; }
     }
 
     public class CreateFeedbackDto

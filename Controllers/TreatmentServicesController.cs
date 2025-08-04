@@ -102,7 +102,7 @@ namespace SWP391_ITMMS_Api.Controllers
                     });
                 }
 
-                string imageUrl = null;
+                string? imageUrl = null;
                 if (imageFile != null)
                 {
                     imageUrl = await _cloudinaryService.UploadImageAsync(imageFile);
@@ -174,7 +174,7 @@ namespace SWP391_ITMMS_Api.Controllers
                 {
                     // Nếu có ảnh mới, upload và cập nhật
                     var imageUrl = await _cloudinaryService.UploadImageAsync(imageFile);
-                    service.ImageUrl = imageUrl;
+                    service.ImageUrl = imageUrl ?? service.ImageUrl;
                 }
 
                 service.ServiceName = dto.ServiceName;
@@ -314,12 +314,12 @@ namespace SWP391_ITMMS_Api.Controllers
     // DTO for TreatmentService
     public class TreatmentServiceDto
     {
-        public string ServiceName { get; set; }
-        public string ServiceCode { get; set; }
-        public string Description { get; set; }
+        public required string ServiceName { get; set; }
+        public required string ServiceCode { get; set; }
+        public required string Description { get; set; }
         public decimal BasePrice { get; set; }
-        public string Procedures { get; set; }
-        public string Requirements { get; set; }
+        public required string Procedures { get; set; }
+        public required string Requirements { get; set; }
         public int DurationDays { get; set; }
         public float SuccessRate { get; set; }
         public string? ImageUrl { get; set; } // Link ảnh đại diện dịch vụ, không required

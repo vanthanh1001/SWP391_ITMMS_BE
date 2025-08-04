@@ -26,14 +26,14 @@ namespace SWP391_ITMMS_Api.Controllers
         {
             [Required]
             [StringLength(200, ErrorMessage = "Tiêu đề không được quá 200 ký tự")]
-            public string Title { get; set; }
+            public required string Title { get; set; }
 
             [Required]
             [MinLength(50, ErrorMessage = "Nội dung phải có ít nhất 50 ký tự")]
-            public string Content { get; set; }
+            public required string Content { get; set; }
 
             [StringLength(50)]
-            public string Category { get; set; } = "Health Tips";
+            public required string Category { get; set; } = "Health Tips";
 
             public bool IsPublished { get; set; } = false;
         }
@@ -55,9 +55,9 @@ namespace SWP391_ITMMS_Api.Controllers
         public class BlogPostResponseDto
         {
             public int Id { get; set; }
-            public string Title { get; set; }
-            public string Content { get; set; }
-            public string Category { get; set; }
+            public required string Title { get; set; }
+            public required string Content { get; set; }
+            public required string Category { get; set; }
             public DateTime CreatedAt { get; set; }
             public DateTime? UpdatedAt { get; set; }
             public bool IsPublished { get; set; }
