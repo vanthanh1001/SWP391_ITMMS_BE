@@ -1,0 +1,321 @@
+### 诊疗流程管理系统 API 测试
+
+### 1. 获取患者完整诊疗流程
+GET {{baseUrl}}/api/TreatmentFlow/patient/1
+Authorization: Bearer {{token}}
+
+### 2. 获取完整治疗跟踪信息
+GET {{baseUrl}}/api/TreatmentTracking/patient/1/complete-flow
+Authorization: Bearer {{token}}
+
+### 3. 更新治疗阶段
+PUT {{baseUrl}}/api/TreatmentFlow/treatment-plan/1/phase
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "currentPhase": 2,
+    "phaseDescription": "Kích thích buồng trứng",
+    "nextPhaseDate": "2024-01-15T00:00:00",
+    "nextVisitDate": "2024-01-10T09:00:00",
+    "progressNotes": "Bắt đầu tiêm thuốc kích thích buồng trứng",
+    "notes": "Theo dõi phản ứng với thuốc"
+}
+
+### 4. 获取治疗阶段详情
+GET {{baseUrl}}/api/TreatmentTracking/treatment-plan/1/phase-details
+Authorization: Bearer {{token}}
+
+### 5. 更新治疗进度
+POST {{baseUrl}}/api/TreatmentTracking/treatment-plan/1/progress-update
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "currentPhase": 3,
+    "phaseDescription": "Chọc hút trứng",
+    "nextPhaseDate": "2024-01-20T00:00:00",
+    "nextVisitDate": "2024-01-18T09:00:00",
+    "progressNotes": "Hoàn thành kích thích buồng trứng, chuẩn bị chọc hút",
+    "notes": "Bệnh nhân phản ứng tốt với thuốc"
+}
+
+### 6. 创建医疗记录
+POST {{baseUrl}}/api/TreatmentFlow/medical-record
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "doctorId": 1,
+    "appointmentId": 1,
+    "symptoms": "Khó thụ thai trong 2 năm, chu kỳ kinh nguyệt không đều",
+    "diagnosis": "Hiếm muộn không rõ nguyên nhân, cần điều trị IVF",
+    "treatment": "Điều trị IVF với kích thích buồng trứng",
+    "prescription": "Gonal-F 225 IU/ngày, Menopur 75 IU/ngày",
+    "notes": "Bệnh nhân cần theo dõi chặt chẽ phản ứng với thuốc"
+}
+
+### 7. 记录检查结果
+POST {{baseUrl}}/api/TreatmentFlow/test-result
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "doctorId": 1,
+    "testName": "Xét nghiệm hormone FSH",
+    "testType": "Hormone",
+    "result": "8.5 mIU/mL",
+    "referenceRange": "3.5-12.5 mIU/mL",
+    "status": "Normal"
+}
+
+### 8. 获取治疗提醒
+GET {{baseUrl}}/api/TreatmentFlow/reminders/1
+Authorization: Bearer {{token}}
+
+### 9. 获取患者提醒
+GET {{baseUrl}}/api/TreatmentTracking/patient/1/reminders
+Authorization: Bearer {{token}}
+
+### 10. 获取治疗进度统计
+GET {{baseUrl}}/api/TreatmentFlow/progress-stats/1
+Authorization: Bearer {{token}}
+
+### 11. 获取治疗统计
+GET {{baseUrl}}/api/TreatmentTracking/patient/1/statistics
+Authorization: Bearer {{token}}
+
+### 12. 获取治疗时间线
+GET {{baseUrl}}/api/TreatmentFlow/timeline/1
+Authorization: Bearer {{token}}
+
+### 13. 获取患者时间线
+GET {{baseUrl}}/api/TreatmentTracking/patient/1/timeline
+Authorization: Bearer {{token}}
+
+### 14. 获取下一步治疗步骤
+GET {{baseUrl}}/api/TreatmentFlow/next-steps/1
+Authorization: Bearer {{token}}
+
+### 15. 记录检查结果 - IVF
+POST {{baseUrl}}/api/TreatmentFlow/test-result
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "doctorId": 1,
+    "testName": "Siêu âm buồng trứng",
+    "testType": "Imaging",
+    "result": "Buồng trứng có 8 nang trứng, kích thước 12-18mm",
+    "referenceRange": "Bình thường: 3-15 nang trứng",
+    "status": "Normal"
+}
+
+### 16. 更新治疗阶段 - IVF
+PUT {{baseUrl}}/api/TreatmentFlow/treatment-plan/1/phase
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "currentPhase": 4,
+    "phaseDescription": "Thụ tinh trong ống nghiệm",
+    "nextPhaseDate": "2024-01-25T00:00:00",
+    "nextVisitDate": "2024-01-23T09:00:00",
+    "progressNotes": "Đã chọc hút được 8 trứng, chuẩn bị thụ tinh",
+    "notes": "Theo dõi sự phát triển của phôi"
+}
+
+### 17. 创建医疗记录 - IVF
+POST {{baseUrl}}/api/TreatmentFlow/medical-record
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "doctorId": 1,
+    "appointmentId": 2,
+    "symptoms": "Sau chọc hút trứng, bụng hơi đau",
+    "diagnosis": "Phản ứng bình thường sau chọc hút trứng",
+    "treatment": "Nghỉ ngơi, uống nhiều nước, theo dõi",
+    "prescription": "Paracetamol 500mg khi cần",
+    "notes": "Bệnh nhân cần nghỉ ngơi 2-3 ngày"
+}
+
+### 18. 更新治疗阶段 - IVF
+PUT {{baseUrl}}/api/TreatmentFlow/treatment-plan/1/phase
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "currentPhase": 5,
+    "phaseDescription": "Chuyển phôi",
+    "nextPhaseDate": "2024-01-30T00:00:00",
+    "nextVisitDate": "2024-01-28T09:00:00",
+    "progressNotes": "Đã thụ tinh thành công 6 phôi, chuẩn bị chuyển phôi",
+    "notes": "Chuyển 2 phôi chất lượng tốt nhất"
+}
+
+### 19. 记录检查结果 - IVF
+POST {{baseUrl}}/api/TreatmentFlow/test-result
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "doctorId": 1,
+    "testName": "Xét nghiệm Beta HCG",
+    "testType": "Hormone",
+    "result": "25.5 mIU/mL",
+    "referenceRange": "Âm tính: <5 mIU/mL, Dương tính: >25 mIU/mL",
+    "status": "Abnormal"
+}
+
+### 20. 更新治疗阶段 - IVF
+PUT {{baseUrl}}/api/TreatmentFlow/treatment-plan/1/phase
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "currentPhase": 6,
+    "phaseDescription": "Theo dõi thai",
+    "nextPhaseDate": "2024-02-15T00:00:00",
+    "nextVisitDate": "2024-02-10T09:00:00",
+    "progressNotes": "Beta HCG dương tính, có thể đã thụ thai thành công",
+    "notes": "Theo dõi sự phát triển của thai, siêu âm sau 2 tuần"
+}
+
+### 21. 创建医疗记录 - IVF
+POST {{baseUrl}}/api/TreatmentFlow/medical-record
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "customerId": 1,
+    "doctorId": 1,
+    "appointmentId": 3,
+    "symptoms": "Beta HCG dương tính, không có triệu chứng bất thường",
+    "diagnosis": "Có thể đã thụ thai thành công",
+    "treatment": "Tiếp tục theo dõi, siêu âm kiểm tra",
+    "prescription": "Acid folic 400mcg/ngày, vitamin tổng hợp",
+    "notes": "Bệnh nhân cần tái khám sau 2 tuần để siêu âm"
+}
+
+### 22. 获取完整治疗流程 - IUI
+GET {{baseUrl}}/api/TreatmentFlow/patient/2
+Authorization: Bearer {{token}}
+
+### 23. 更新治疗阶段 - IUI
+PUT {{baseUrl}}/api/TreatmentFlow/treatment-plan/2/phase
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "currentPhase": 2,
+    "phaseDescription": "Kích thích rụng trứng",
+    "nextPhaseDate": "2024-01-12T00:00:00",
+    "nextVisitDate": "2024-01-10T09:00:00",
+    "progressNotes": "Bắt đầu tiêm thuốc kích thích rụng trứng",
+    "notes": "Theo dõi sự phát triển của nang trứng"
+}
+
+### 24. 记录检查结果 - IUI
+POST {{baseUrl}}/api/TreatmentFlow/test-result
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "customerId": 2,
+    "doctorId": 1,
+    "testName": "Siêu âm nang trứng",
+    "testType": "Imaging",
+    "result": "Có 2 nang trứng trội, kích thước 18-20mm",
+    "referenceRange": "Sẵn sàng rụng trứng: 18-25mm",
+    "status": "Normal"
+}
+
+### 25. 更新治疗阶段 - IUI
+PUT {{baseUrl}}/api/TreatmentFlow/treatment-plan/2/phase
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "currentPhase": 3,
+    "phaseDescription": "Thụ tinh nhân tạo",
+    "nextPhaseDate": "2024-01-15T00:00:00",
+    "nextVisitDate": "2024-01-14T09:00:00",
+    "progressNotes": "Nang trứng đã sẵn sàng, chuẩn bị thụ tinh nhân tạo",
+    "notes": "Thực hiện IUI vào ngày mai"
+}
+
+### 26. 创建医疗记录 - IUI
+POST {{baseUrl}}/api/TreatmentFlow/medical-record
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "customerId": 2,
+    "doctorId": 1,
+    "appointmentId": 4,
+    "symptoms": "Sau IUI, không có triệu chứng bất thường",
+    "diagnosis": "Đã thực hiện IUI thành công",
+    "treatment": "Nghỉ ngơi, theo dõi",
+    "prescription": "Progesterone 200mg/ngày trong 14 ngày",
+    "notes": "Bệnh nhân cần nghỉ ngơi 1-2 ngày, tránh vận động mạnh"
+}
+
+### 27. 更新治疗阶段 - IUI
+PUT {{baseUrl}}/api/TreatmentFlow/treatment-plan/2/phase
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "currentPhase": 4,
+    "phaseDescription": "Theo dõi thai",
+    "nextPhaseDate": "2024-01-29T00:00:00",
+    "nextVisitDate": "2024-01-28T09:00:00",
+    "progressNotes": "Đã thực hiện IUI, chờ kết quả thụ thai",
+    "notes": "Xét nghiệm Beta HCG sau 14 ngày"
+}
+
+### 28. 记录检查结果 - IUI
+POST {{baseUrl}}/api/TreatmentFlow/test-result
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "customerId": 2,
+    "doctorId": 1,
+    "testName": "Xét nghiệm Beta HCG",
+    "testType": "Hormone",
+    "result": "3.2 mIU/mL",
+    "referenceRange": "Âm tính: <5 mIU/mL, Dương tính: >25 mIU/mL",
+    "status": "Normal"
+}
+
+### 29. 更新治疗阶段 - IUI (失败)
+PUT {{baseUrl}}/api/TreatmentFlow/treatment-plan/2/phase
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+    "currentPhase": 4,
+    "phaseDescription": "Kết quả thụ thai",
+    "nextPhaseDate": "2024-02-15T00:00:00",
+    "nextVisitDate": "2024-02-10T09:00:00",
+    "progressNotes": "Beta HCG âm tính, IUI không thành công",
+    "notes": "Có thể thử lại IUI hoặc chuyển sang IVF",
+    "status": "Completed"
+}
+
+### 30. 获取所有患者的治疗统计
+GET {{baseUrl}}/api/TreatmentTracking/patient/1/statistics
+Authorization: Bearer {{adminToken}}
+
+### 变量设置
+@baseUrl = https://localhost:7001
+@token = your_customer_token_here
+@doctorToken = your_doctor_token_here
+@adminToken = your_admin_token_here 

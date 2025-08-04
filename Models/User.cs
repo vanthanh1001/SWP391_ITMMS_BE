@@ -238,6 +238,9 @@ namespace SWP391_ITMMS_Api.Models
         [StringLength(1000)]
         public string Prescription { get; set; }
         
+        [StringLength(1000)]
+        public string Notes { get; set; }
+        
         public DateTime RecordDate { get; set; } = DateTime.Now;
 
         // Navigation properties
@@ -375,10 +378,10 @@ namespace SWP391_ITMMS_Api.Models
     {
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = "";
         
         [Required]
-        public string Password { get; set; }
+        public string Password { get; set; } = "";
     }
 
     public class UpdateUserDto

@@ -73,7 +73,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("TreatmentPlanId");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointments", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.BlogPost", b =>
@@ -114,7 +114,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("BlogPosts");
+                    b.ToTable("BlogPosts", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.Customer", b =>
@@ -146,7 +146,7 @@ namespace SWP391_ITMMS_Api.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.Doctor", b =>
@@ -197,7 +197,7 @@ namespace SWP391_ITMMS_Api.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Doctors");
+                    b.ToTable("Doctors", (string)null);
 
                     b.HasData(
                         new
@@ -250,7 +250,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("Feedbacks", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.MedicalRecord", b =>
@@ -302,7 +302,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("MedicalRecords");
+                    b.ToTable("MedicalRecords", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.Prescription", b =>
@@ -345,7 +345,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("MedicalRecordId");
 
-                    b.ToTable("Prescriptions");
+                    b.ToTable("Prescriptions", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.TestResult", b =>
@@ -401,7 +401,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("TestResults");
+                    b.ToTable("TestResults", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.TreatmentHistory", b =>
@@ -424,7 +424,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TreatmentHistories");
+                    b.ToTable("TreatmentHistories", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.TreatmentPlan", b =>
@@ -508,7 +508,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasIndex("TreatmentServiceId");
 
-                    b.ToTable("TreatmentPlans");
+                    b.ToTable("TreatmentPlans", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.TreatmentService", b =>
@@ -571,7 +571,7 @@ namespace SWP391_ITMMS_Api.Migrations
                     b.HasIndex("ServiceCode")
                         .IsUnique();
 
-                    b.ToTable("TreatmentServices");
+                    b.ToTable("TreatmentServices", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.User", b =>
@@ -634,7 +634,7 @@ namespace SWP391_ITMMS_Api.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new
@@ -698,7 +698,7 @@ namespace SWP391_ITMMS_Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserFeedbacks");
+                    b.ToTable("UserFeedbacks", (string)null);
                 });
 
             modelBuilder.Entity("SWP391_ITMMS_Api.Models.Appointment", b =>

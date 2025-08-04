@@ -239,68 +239,128 @@ namespace SWP391_ITMMS_Api.Data
             );
 
             // Seed Treatment Services
-            // modelBuilder.Entity<TreatmentService>().HasData(
-            //     new TreatmentService
-            //     {
-            //         Id = 1,
-            //         ServiceName = "Thụ tinh trong ống nghiệm (IVF)",
-            //         ServiceCode = "IVF001",
-            //         Description = "Kỹ thuật hỗ trợ sinh sản hiện đại, tỷ lệ thành công cao. Quy trình bao gồm kích thích buồng trung, lấy trứng, thụ tinh ngoài cơ thể và chuyển phôi.",
-            //         BasePrice = 85000000,
-            //         Procedures = "Khám sàng lọc → Kích thích buồng trung → Lấy trứng → Thụ tinh → Nuôi cấy phôi → Chuyển phôi",
-            //         Requirements = "Khám tổng quát, xét nghiệm hormone, siêu âm, tinh dịch đồ",
-            //         DurationDays = 30,
-            //         SuccessRate = 68.5f,
-            //         IsActive = true,
-            //         CreatedAt = DateTime.Now,
-            //         ImageUrl = ""
-            //     },
-            //     new TreatmentService
-            //     {
-            //         Id = 2,
-            //         ServiceName = "Thụ tinh nhân tạo (IUI)",
-            //         ServiceCode = "IUI001",
-            //         Description = "Kỹ thuật đưa tinh trùng đã được xử lý vào buồng tử cung vào thời điểm rụng trứng.",
-            //         BasePrice = 15000000,
-            //         Procedures = "Khám sàng lọc → Theo dõi rụng trứng → Xử lý tinh trùng → Bơm tinh trùng vào tử cung",
-            //         Requirements = "Vòi trứng thông thoáng, tinh trùng đạt chất lượng tối thiểu",
-            //         DurationDays = 14,
-            //         SuccessRate = 35.2f,
-            //         IsActive = true,
-            //         CreatedAt = DateTime.Now,
-            //         ImageUrl = ""
-            //     },
-            //     new TreatmentService
-            //     {
-            //         Id = 3,
-            //         ServiceName = "IVF với ICSI",
-            //         ServiceCode = "ICSI001",
-            //         Description = "Kỹ thuật tiêm tinh trùng vào bào tương trứng, áp dụng cho các trường hợp nam giới có chất lượng tinh trùng kém.",
-            //         BasePrice = 95000000,
-            //         Procedures = "Quy trình IVF kết hợp với kỹ thuật ICSI",
-            //         Requirements = "Tinh trùng số lượng ít hoặc chất lượng kém",
-            //         DurationDays = 35,
-            //         SuccessRate = 72.3f,
-            //         IsActive = true,
-            //         CreatedAt = DateTime.Now,
-            //         ImageUrl = ""
-            //     },
-            //     new TreatmentService
-            //     {
-            //         Id = 4,
-            //         ServiceName = "Điều trị nội khoa hiếm muộn",
-            //         ServiceCode = "MED001",
-            //         Description = "Điều trị bằng thuốc cho các trường hợp rối loạn nội tiết, PCOS, rối loạn tinh trùng.",
-            //         BasePrice = 5000000,
-            //         Procedures = "Khám và chẩn đoán → Điều trị nội khoa → Theo dõi đáp ứng",
-            //         Requirements = "Khám tổng quát, xét nghiệm chuyên sâu",
-            //         DurationDays = 90,
-            //         SuccessRate = 45.7f,
-            //         IsActive = true,
-            //         CreatedAt = DateTime.Now,
-            //         ImageUrl = ""
-            //     }
-            // );
+            modelBuilder.Entity<TreatmentService>().HasData(
+                new TreatmentService
+                {
+                    Id = 1,
+                    ServiceName = "Thụ tinh trong ống nghiệm (IVF)",
+                    ServiceCode = "IVF001",
+                    Description = "Kỹ thuật hỗ trợ sinh sản hiện đại, tỷ lệ thành công cao. Quy trình bao gồm kích thích buồng trung, lấy trứng, thụ tinh ngoài cơ thể và chuyển phôi.",
+                    BasePrice = 85000000,
+                    Procedures = "Khám sàng lọc → Kích thích buồng trung → Lấy trứng → Thụ tinh → Nuôi cấy phôi → Chuyển phôi",
+                    Requirements = "Khám tổng quát, xét nghiệm hormone, siêu âm, tinh dịch đồ",
+                    DurationDays = 30,
+                    SuccessRate = 68.5f,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    ImageUrl = ""
+                },
+                new TreatmentService
+                {
+                    Id = 2,
+                    ServiceName = "Thụ tinh nhân tạo (IUI)",
+                    ServiceCode = "IUI001",
+                    Description = "Kỹ thuật đưa tinh trùng đã được xử lý vào buồng tử cung vào thời điểm rụng trứng.",
+                    BasePrice = 15000000,
+                    Procedures = "Khám sàng lọc → Theo dõi rụng trứng → Xử lý tinh trùng → Bơm tinh trùng vào tử cung",
+                    Requirements = "Vòi trứng thông thoáng, tinh trùng đạt chất lượng tối thiểu",
+                    DurationDays = 14,
+                    SuccessRate = 35.2f,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    ImageUrl = ""
+                },
+                new TreatmentService
+                {
+                    Id = 3,
+                    ServiceName = "IVF với ICSI",
+                    ServiceCode = "ICSI001",
+                    Description = "Kỹ thuật tiêm tinh trùng vào bào tương trứng, áp dụng cho các trường hợp nam giới có chất lượng tinh trùng kém.",
+                    BasePrice = 95000000,
+                    Procedures = "Quy trình IVF kết hợp với kỹ thuật ICSI",
+                    Requirements = "Tinh trùng số lượng ít hoặc chất lượng kém",
+                    DurationDays = 35,
+                    SuccessRate = 72.3f,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    ImageUrl = ""
+                },
+                new TreatmentService
+                {
+                    Id = 4,
+                    ServiceName = "Điều trị nội khoa hiếm muộn",
+                    ServiceCode = "MED001",
+                    Description = "Điều trị bằng thuốc cho các trường hợp rối loạn nội tiết, PCOS, rối loạn tinh trùng.",
+                    BasePrice = 5000000,
+                    Procedures = "Khám và chẩn đoán → Điều trị nội khoa → Theo dõi đáp ứng",
+                    Requirements = "Khám tổng quát, xét nghiệm chuyên sâu",
+                    DurationDays = 90,
+                    SuccessRate = 45.7f,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    ImageUrl = ""
+                },
+                new TreatmentService
+                {
+                    Id = 5,
+                    ServiceName = "Phẫu thuật nội soi ổ bụng",
+                    ServiceCode = "LAP001",
+                    Description = "Phẫu thuật nội soi để điều trị các bệnh lý phụ khoa như u nang buồng trứng, tắc vòi trứng, lạc nội mạc tử cung.",
+                    BasePrice = 25000000,
+                    Procedures = "Khám sàng lọc → Phẫu thuật nội soi → Theo dõi hậu phẫu → Tái khám",
+                    Requirements = "Khám tổng quát, xét nghiệm máu, siêu âm, chụp X-quang",
+                    DurationDays = 7,
+                    SuccessRate = 85.2f,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    ImageUrl = ""
+                },
+                new TreatmentService
+                {
+                    Id = 6,
+                    ServiceName = "Điều trị rối loạn nội tiết",
+                    ServiceCode = "HORM001",
+                    Description = "Điều trị các rối loạn nội tiết ảnh hưởng đến khả năng sinh sản như PCOS, suy buồng trứng sớm.",
+                    BasePrice = 8000000,
+                    Procedures = "Khám chuyên khoa → Xét nghiệm hormone → Điều trị nội tiết → Theo dõi đáp ứng",
+                    Requirements = "Xét nghiệm hormone toàn diện, siêu âm buồng trứng",
+                    DurationDays = 120,
+                    SuccessRate = 52.3f,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    ImageUrl = ""
+                },
+                new TreatmentService
+                {
+                    Id = 7,
+                    ServiceName = "Điều trị vô sinh nam",
+                    ServiceCode = "MALE001",
+                    Description = "Điều trị các nguyên nhân vô sinh nam như rối loạn tinh trùng, tắc ống dẫn tinh, giãn tĩnh mạch thừng tinh.",
+                    BasePrice = 12000000,
+                    Procedures = "Khám nam khoa → Xét nghiệm tinh dịch đồ → Điều trị theo nguyên nhân → Theo dõi cải thiện",
+                    Requirements = "Xét nghiệm tinh dịch đồ, hormone nam, siêu âm tinh hoàn",
+                    DurationDays = 180,
+                    SuccessRate = 48.7f,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    ImageUrl = ""
+                },
+                new TreatmentService
+                {
+                    Id = 8,
+                    ServiceName = "Đông lạnh tinh trùng/trứng",
+                    ServiceCode = "FREEZE001",
+                    Description = "Bảo quản tinh trùng hoặc trứng bằng phương pháp đông lạnh để sử dụng sau này.",
+                    BasePrice = 10000000,
+                    Procedures = "Khám sàng lọc → Thu thập mẫu → Xử lý và đông lạnh → Bảo quản",
+                    Requirements = "Khám tổng quát, xét nghiệm bệnh truyền nhiễm",
+                    DurationDays = 1,
+                    SuccessRate = 95.0f,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    ImageUrl = ""
+                }
+            );
         }
     }
 } 

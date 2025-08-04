@@ -18,6 +18,7 @@ builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<ITreatmentFlowService, TreatmentFlowService>();
 
 // Cấu hình JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JWT");
