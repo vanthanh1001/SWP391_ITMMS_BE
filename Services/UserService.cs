@@ -62,10 +62,10 @@ namespace SWP391_ITMMS_Api.Services
                     var customer = new Customer
                     {
                         UserId = user.Id,
+                        DateOfBirth = DateTime.Now,
                         Gender = "",
-                        MaritalStatus = "",
-                        EmergencyContact = "",
-                        MedicalHistory = ""
+                        Address = "",
+                        EmergencyContact = ""
                     };
                     _context.Customers.Add(customer);
                 }

@@ -52,12 +52,10 @@ namespace SWP391_ITMMS_Api.Models
         public int Id { get; set; }
         public int UserId { get; set; }
         
-        [Required]
         [StringLength(100)]
         public string Specialization { get; set; }
         
-        [Required]
-        [StringLength(50)]
+        [StringLength(20)]
         public string LicenseNumber { get; set; }
         
         [StringLength(200)]
@@ -68,60 +66,43 @@ namespace SWP391_ITMMS_Api.Models
         [StringLength(1000)]
         public string Description { get; set; }
         
-        [Column(TypeName = "decimal(10,2)")]
         public decimal ConsultationFee { get; set; }
-        
         public bool IsAvailable { get; set; } = true;
 
         // Navigation properties
-        [ForeignKey("UserId")]
-        [JsonIgnore]
         public virtual User User { get; set; }
-        [JsonIgnore]
-        public virtual ICollection<TreatmentPlan> TreatmentPlans { get; set; } = new List<TreatmentPlan>();
-        [JsonIgnore]
         public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
-        [JsonIgnore]
         public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
-        [JsonIgnore]
-        public virtual ICollection<TestResult> TestResults { get; set; } = new List<TestResult>();
-        [JsonIgnore]
+        public virtual ICollection<TreatmentPlan> TreatmentPlans { get; set; } = new List<TreatmentPlan>();
         public virtual ICollection<Feedback> ReceivedFeedbacks { get; set; } = new List<Feedback>();
+        
+        // Thêm navigation properties mới
+        public virtual ICollection<DoctorSchedule> Schedules { get; set; } = new List<DoctorSchedule>();
+        public virtual ICollection<DoctorLeave> Leaves { get; set; } = new List<DoctorLeave>();
+        public virtual ICollection<DoctorTimeSlot> TimeSlots { get; set; } = new List<DoctorTimeSlot>();
     }
 
     public class Customer
     {
         public int Id { get; set; }
         public int UserId { get; set; }
-        
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
         
         [StringLength(10)]
-        public string Gender { get; set; } // Male, Female, Other
+        public string Gender { get; set; }
+        
+        [StringLength(500)]
+        public string Address { get; set; }
         
         [StringLength(20)]
-        public string MaritalStatus { get; set; } // Single, Married, Divorced, Widowed
-        
-        [StringLength(100)]
         public string EmergencyContact { get; set; }
-        
-        [StringLength(1000)]
-        public string MedicalHistory { get; set; }
 
         // Navigation properties
-        [ForeignKey("UserId")]
-        [JsonIgnore]
         public virtual User User { get; set; }
-        [JsonIgnore]
-        public virtual ICollection<TreatmentPlan> TreatmentPlans { get; set; } = new List<TreatmentPlan>();
-        [JsonIgnore]
         public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
-        [JsonIgnore]
         public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
-        [JsonIgnore]
-        public virtual ICollection<TestResult> TestResults { get; set; } = new List<TestResult>();
-        [JsonIgnore]
-        public virtual ICollection<Feedback> GivenFeedbacks { get; set; } = new List<Feedback>();
+        public virtual ICollection<TreatmentPlan> TreatmentPlans { get; set; } = new List<TreatmentPlan>();
+        public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
     }
 
     public class TreatmentPlan
@@ -129,58 +110,32 @@ namespace SWP391_ITMMS_Api.Models
         public int Id { get; set; }
         public int CustomerId { get; set; }
         public int DoctorId { get; set; }
-        public int? TreatmentServiceId { get; set; } // Link to TreatmentService
-        
-        [Required]
-        [StringLength(100)]
-        public string TreatmentType { get; set; } // IVF, IUI, Medication, Surgery, etc.
-        
-        [StringLength(1000)]
+        public int? TreatmentServiceId { get; set; }
+
+        public string TreatmentType { get; set; }
         public string Description { get; set; }
-        
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public string Status { get; set; }
         
-        [StringLength(20)]
-        public string Status { get; set; } = "Active"; // Active, Completed, Cancelled, On-Hold
-        
-        [Column(TypeName = "decimal(12,2)")]
         public decimal TotalCost { get; set; }
+        public decimal PaidAmount { get; set; }
+        public string PaymentStatus { get; set; }
         
-        [Column(TypeName = "decimal(12,2)")]
-        public decimal PaidAmount { get; set; } = 0;
-        
-        [StringLength(20)]
-        public string PaymentStatus { get; set; } = "Pending"; // Pending, Partial, Paid, Refunded
-        
-        // Treatment Monitoring Fields
-        public int CurrentPhase { get; set; } = 1; // Phase of treatment (1,2,3...)
-        [StringLength(500)]
-        public string PhaseDescription { get; set; } = ""; // Current phase description
+        public int CurrentPhase { get; set; }
+        public string PhaseDescription { get; set; }
         public DateTime? NextPhaseDate { get; set; }
         public DateTime? NextVisitDate { get; set; }
         
-        [StringLength(1000)]
-        public string Notes { get; set; } = ""; // Doctor's notes and instructions
-        
-        [StringLength(1000)]
-        public string ProgressNotes { get; set; } = ""; // Treatment progress
+        public string Notes { get; set; }
+        public string ProgressNotes { get; set; }
 
         // Navigation properties
-        [ForeignKey("CustomerId")]
-        [JsonIgnore]
         public virtual Customer Customer { get; set; }
-        
-        [ForeignKey("DoctorId")]
-        [JsonIgnore]
         public virtual Doctor Doctor { get; set; }
-        
-        [ForeignKey("TreatmentServiceId")]
-        [JsonIgnore]
         public virtual TreatmentService? TreatmentService { get; set; }
-        
-        [JsonIgnore]
         public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+        public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
     }
 
     public class Appointment
@@ -191,38 +146,25 @@ namespace SWP391_ITMMS_Api.Models
         public int? TreatmentPlanId { get; set; }
         
         public DateTime AppointmentDate { get; set; }
+        public string TimeSlot { get; set; }
+        public string Type { get; set; } // "Consultation", "Follow-up", "Emergency"
+        public string Status { get; set; } // "Scheduled", "Completed", "Cancelled", "NoShow"
         
-        [StringLength(20)]
-        public string TimeSlot { get; set; } // 09:00-10:00, 10:00-11:00, etc.
+        public string? CancellationReason { get; set; }
+        public string? CancelledBy { get; set; } // "Customer", "Doctor", "System"
+        public DateTime? CancelledAt { get; set; }
+        public string? CancellationNotes { get; set; }
         
-        [StringLength(50)]
-        public string Type { get; set; } // Consultation, Follow-up, Treatment, Test
-        
-        [StringLength(20)]
-        public string Status { get; set; } = "Scheduled"; // Scheduled, Completed, Cancelled, No-Show
-        
-        [StringLength(500)]
-        public string Notes { get; set; }
-        
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? CompletedAt { get; set; }
+        public DateTime? LastModified { get; set; }
+        public string? Notes { get; set; }
 
         // Navigation properties
-        [ForeignKey("CustomerId")]
-        [JsonIgnore]
         public virtual Customer Customer { get; set; }
-        
-        [ForeignKey("DoctorId")]
-        [JsonIgnore]
         public virtual Doctor Doctor { get; set; }
-        
-        [ForeignKey("TreatmentPlanId")]
-        [JsonIgnore]
         public virtual TreatmentPlan? TreatmentPlan { get; set; }
-        
-        [JsonIgnore]
         public virtual MedicalRecord? MedicalRecord { get; set; }
-        [JsonIgnore]
-        public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
     }
 
     public class MedicalRecord
@@ -231,32 +173,26 @@ namespace SWP391_ITMMS_Api.Models
         public int CustomerId { get; set; }
         public int DoctorId { get; set; }
         public int AppointmentId { get; set; }
-        
-        [StringLength(500)]
-        public string Diagnosis { get; set; }
-        
-        [StringLength(1000)]
+        public int? TreatmentPlanId { get; set; }
+
         public string Symptoms { get; set; }
-        
-        [StringLength(1000)]
+        public string Diagnosis { get; set; }
         public string Treatment { get; set; }
-        
-        [StringLength(1000)]
-        public string Prescription { get; set; }
-        
-        public DateTime RecordDate { get; set; } = DateTime.Now;
+        public string? Prescription { get; set; }
+        public string? Notes { get; set; }
+        public DateTime RecordDate { get; set; }
+
+        // Thêm trường mới
+        public VitalSigns VitalSigns { get; set; }
+        public DateTime? FollowUpDate { get; set; }
+        public string? TreatmentProgress { get; set; }
+        public DateTime? LastModified { get; set; }
 
         // Navigation properties
-        [ForeignKey("CustomerId")]
         public virtual Customer Customer { get; set; }
-        
-        [ForeignKey("DoctorId")]
         public virtual Doctor Doctor { get; set; }
-        
-        [ForeignKey("AppointmentId")]
         public virtual Appointment Appointment { get; set; }
-        
-        public virtual ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
+        public virtual TreatmentPlan? TreatmentPlan { get; set; }
     }
 
     public class Prescription

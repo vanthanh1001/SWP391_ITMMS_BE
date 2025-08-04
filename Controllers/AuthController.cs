@@ -103,7 +103,8 @@ namespace SWP391_ITMMS_Api.Controllers
                             user.Customer.Id,
                             user.Customer.DateOfBirth,
                             user.Customer.Gender,
-                            user.Customer.MaritalStatus
+                            user.Customer.Address,
+                            user.Customer.EmergencyContact
                         } : null
                     }
                 });

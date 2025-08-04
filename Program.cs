@@ -7,115 +7,71 @@ using SWP391_ITMMS_Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Thêm Swagger services
+// Add services to the container.
 builder.Services.AddControllers();
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Đăng ký services
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IAppointmentService, AppointmentService>();
-builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
-
-// Cấu hình JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JWT");
-var secretKey = jwtSettings["SecretKey"] ?? "YourSuperSecretKeyForITMMS2024WithAtLeast32Characters!";
-var key = Encoding.ASCII.GetBytes(secretKey);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = true,
-        ValidIssuer = jwtSettings["Issuer"] ?? "ITMMS-API",
-        ValidateAudience = true,
-        ValidAudience = jwtSettings["Audience"] ?? "ITMMS-Client",
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
-    };
-});
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "ITMMS API", Version = "v1" });
-    
-    // Thêm định nghĩa JWT authentication cho Swagger
-    c.AddSecurityDefinition("Bearer", new() 
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Nhập 'Bearer' [space] và sau đó nhập token của bạn trong text input bên dưới.\r\n\r\nVí dụ: \"Bearer 12345abcdef\"",
-        Name = "Authorization",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
-    c.AddSecurityRequirement(new()
-    {
-        {
-            new ()
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
-});
-
-// Cấu hình CORS
+// Add CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
 });
+
+// Add JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+// Add Authorization
+builder.Services.AddAuthorization();
+
+// Register Services
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
+builder.Services.AddScoped<IDoctorScheduleService, DoctorScheduleService>();
 
 var app = builder.Build();
 
-// Bật Swagger UI ở mọi môi trường
-app.UseSwagger();
-app.UseSwaggerUI();
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-// Sử dụng CORS
+app.UseHttpsRedirection();
+
 app.UseCors("AllowAll");
 
-// Tạm comment UseHttpsRedirection cho development  
-// app.UseHttpsRedirection();
 app.UseAuthentication();
-
-// Thêm custom JWT middleware (commented out for now)
-// app.UseMiddleware<JwtMiddleware>();
-
 app.UseAuthorization();
+
 app.MapControllers();
-
-// API endpoint mẫu để test
-app.MapGet("/", () => "Welcome to ITMMS API - Hệ thống quản lý và theo dõi điều trị hiếm muộn!");
-
-app.MapGet("/api/health", () => new 
-{ 
-    status = "healthy", 
-    timestamp = DateTime.Now,
-    version = "1.0.0",
-    database = "connected"
-});
 
 app.Run();

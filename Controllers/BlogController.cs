@@ -294,13 +294,13 @@ namespace SWP391_ITMMS_Api.Controllers
                 // Cập nhật thông tin
                 if (!string.IsNullOrEmpty(dto.Title))
                     blogPost.Title = dto.Title;
-                
+
                 if (!string.IsNullOrEmpty(dto.Content))
                     blogPost.Content = dto.Content;
-                
+
                 if (!string.IsNullOrEmpty(dto.Category))
                     blogPost.Category = dto.Category;
-                
+
                 if (dto.IsPublished.HasValue)
                     blogPost.IsPublished = dto.IsPublished.Value;
 
@@ -324,7 +324,7 @@ namespace SWP391_ITMMS_Api.Controllers
                 return Ok(new { 
                     success = true, 
                     message = "Cập nhật bài viết thành công",
-                    data = response
+                    data = response 
                 });
             }
             catch (Exception ex)

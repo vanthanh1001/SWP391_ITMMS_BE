@@ -12,7 +12,14 @@ namespace SWP391_ITMMS_Api.Services
         Task<bool> UpdateAppointmentStatusAsync(int id, string status);
         Task<bool> CancelAppointmentAsync(int id);
         Task<bool> RescheduleAppointmentAsync(int id, DateTime newDate, string newTimeSlot);
-        Task<IEnumerable<string>> GetAvailableTimeSlotsAsync(int doctorId, DateTime date);
+        Task<IEnumerable<string>> GetLegacyAvailableTimeSlotsAsync(int doctorId, DateTime date);
         Task<bool> IsTimeSlotAvailableAsync(int doctorId, DateTime date, string timeSlot);
+
+        // Thêm các method mới
+        Task<bool> CancelAppointmentAsync(int appointmentId, CancelAppointmentDto dto, string userId);
+        Task<bool> RescheduleAppointmentAsync(int appointmentId, RescheduleAppointmentDto dto, string userId);
+        Task<List<object>> GetAppointmentHistoryAsync(int customerId);
+        Task<List<object>> GetDoctorAppointmentsAsync(int doctorId, DateTime? date = null);
+        Task<List<object>> GetAvailableTimeSlotsAsync(int doctorId, DateTime date);
     }
 } 
