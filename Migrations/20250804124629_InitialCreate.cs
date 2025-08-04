@@ -45,7 +45,7 @@ namespace SWP391_ITMMS_Api.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
+                    ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -124,9 +124,7 @@ namespace SWP391_ITMMS_Api.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Gender = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    MaritalStatus = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    EmergencyContact = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    MedicalHistory = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false)
+                    EmergencyContact = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -387,9 +385,9 @@ namespace SWP391_ITMMS_Api.Migrations
                 columns: new[] { "Id", "Address", "AvatarUrl", "CreatedAt", "Email", "FullName", "IsActive", "Password", "Phone", "Role", "UpdatedAt", "Username" },
                 values: new object[,]
                 {
-                    { 1, "System", null, new DateTime(2025, 7, 26, 18, 51, 21, 450, DateTimeKind.Local).AddTicks(4003), "admin@itmms.com", "System Administrator", true, "$2a$11$YcJW1REk5QeXR2ut1nLS8O2HByaLSnZHRSdFqmRffRj9iUBHRi0rO", "0123456789", "Admin", null, "admin" },
-                    { 2, "Hà Nội", null, new DateTime(2025, 7, 26, 18, 51, 21, 677, DateTimeKind.Local).AddTicks(7381), "doctor1@itmms.com", "Dr. Nguyễn Văn A", true, "$2a$11$LdVcYx1.wfiTfbj4wOjwTeIFUC4DlJvwOPgbByPHzSVksFKAMgwhW", "0987654321", "Doctor", null, "doctor1" },
-                    { 4, "Hà Nội", null, new DateTime(2025, 7, 26, 18, 51, 21, 895, DateTimeKind.Local).AddTicks(5591), "manager@itmms.com", "Nguyễn Thị B", true, "$2a$11$wbSKrTV/lm3tfUYrOZMikOHgOgj13gnfGC9AylmWUOZ0/EGAj3t6G", "0123456790", "Manager", null, "manager1" }
+                    { 1, "System", null, new DateTime(2025, 8, 4, 19, 46, 28, 299, DateTimeKind.Local).AddTicks(2508), "admin@itmms.com", "System Administrator", true, "$2a$11$gNgSE/8RrmqgHaOfuQab5evJV1hH1A0bj3eGt0U1GElIKO3sCF6Te", "0123456789", "Admin", null, "admin" },
+                    { 2, "Hà Nội", null, new DateTime(2025, 8, 4, 19, 46, 28, 504, DateTimeKind.Local).AddTicks(5439), "doctor1@itmms.com", "Dr. Nguyễn Văn A", true, "$2a$11$1C9uwc1YrD0JTvpZvhpOTeXsQ1yJyT6Hb0bJmnSa.ebaKhoPO5BOe", "0987654321", "Doctor", null, "doctor1" },
+                    { 4, "Hà Nội", null, new DateTime(2025, 8, 4, 19, 46, 28, 708, DateTimeKind.Local).AddTicks(8855), "manager@itmms.com", "Nguyễn Thị B", true, "$2a$11$DiOGOqcsL/V8oEwGr8ASj.B.Ob9NhJ/8Enh2qeObYzBfoTNpmyz0e", "0123456790", "Manager", null, "manager1" }
                 });
 
             migrationBuilder.InsertData(

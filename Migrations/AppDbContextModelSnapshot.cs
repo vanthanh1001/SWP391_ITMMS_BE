@@ -138,16 +138,6 @@ namespace SWP391_ITMMS_Api.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("MaritalStatus")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("MedicalHistory")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -544,7 +534,6 @@ namespace SWP391_ITMMS_Api.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -652,11 +641,11 @@ namespace SWP391_ITMMS_Api.Migrations
                         {
                             Id = 1,
                             Address = "System",
-                            CreatedAt = new DateTime(2025, 7, 26, 18, 51, 21, 450, DateTimeKind.Local).AddTicks(4003),
+                            CreatedAt = new DateTime(2025, 8, 4, 19, 46, 28, 299, DateTimeKind.Local).AddTicks(2508),
                             Email = "admin@itmms.com",
                             FullName = "System Administrator",
                             IsActive = true,
-                            Password = "$2a$11$YcJW1REk5QeXR2ut1nLS8O2HByaLSnZHRSdFqmRffRj9iUBHRi0rO",
+                            Password = "$2a$11$gNgSE/8RrmqgHaOfuQab5evJV1hH1A0bj3eGt0U1GElIKO3sCF6Te",
                             Phone = "0123456789",
                             Role = "Admin",
                             Username = "admin"
@@ -665,11 +654,11 @@ namespace SWP391_ITMMS_Api.Migrations
                         {
                             Id = 2,
                             Address = "Hà Nội",
-                            CreatedAt = new DateTime(2025, 7, 26, 18, 51, 21, 677, DateTimeKind.Local).AddTicks(7381),
+                            CreatedAt = new DateTime(2025, 8, 4, 19, 46, 28, 504, DateTimeKind.Local).AddTicks(5439),
                             Email = "doctor1@itmms.com",
                             FullName = "Dr. Nguyễn Văn A",
                             IsActive = true,
-                            Password = "$2a$11$LdVcYx1.wfiTfbj4wOjwTeIFUC4DlJvwOPgbByPHzSVksFKAMgwhW",
+                            Password = "$2a$11$1C9uwc1YrD0JTvpZvhpOTeXsQ1yJyT6Hb0bJmnSa.ebaKhoPO5BOe",
                             Phone = "0987654321",
                             Role = "Doctor",
                             Username = "doctor1"
@@ -678,11 +667,11 @@ namespace SWP391_ITMMS_Api.Migrations
                         {
                             Id = 4,
                             Address = "Hà Nội",
-                            CreatedAt = new DateTime(2025, 7, 26, 18, 51, 21, 895, DateTimeKind.Local).AddTicks(5591),
+                            CreatedAt = new DateTime(2025, 8, 4, 19, 46, 28, 708, DateTimeKind.Local).AddTicks(8855),
                             Email = "manager@itmms.com",
                             FullName = "Nguyễn Thị B",
                             IsActive = true,
-                            Password = "$2a$11$wbSKrTV/lm3tfUYrOZMikOHgOgj13gnfGC9AylmWUOZ0/EGAj3t6G",
+                            Password = "$2a$11$DiOGOqcsL/V8oEwGr8ASj.B.Ob9NhJ/8Enh2qeObYzBfoTNpmyz0e",
                             Phone = "0123456790",
                             Role = "Manager",
                             Username = "manager1"

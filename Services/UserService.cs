@@ -63,9 +63,7 @@ namespace SWP391_ITMMS_Api.Services
                     {
                         UserId = user.Id,
                         Gender = "",
-                        MaritalStatus = "",
-                        EmergencyContact = "",
-                        MedicalHistory = ""
+                        EmergencyContact = ""
                     };
                     _context.Customers.Add(customer);
                 }

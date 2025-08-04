@@ -99,14 +99,8 @@ namespace SWP391_ITMMS_Api.Models
         [StringLength(10)]
         public string Gender { get; set; } // Male, Female, Other
         
-        [StringLength(20)]
-        public string MaritalStatus { get; set; } // Single, Married, Divorced, Widowed
-        
         [StringLength(100)]
         public string EmergencyContact { get; set; }
-        
-        [StringLength(1000)]
-        public string MedicalHistory { get; set; }
 
         // Navigation properties
         [ForeignKey("UserId")]
